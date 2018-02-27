@@ -1,0 +1,6 @@
+#ifndef STBSRISRATES_H
+#define STBSRISRATES_H
+
+#define MAX_PLAYERS 2
+
+#endif // STBSRISRATES_H

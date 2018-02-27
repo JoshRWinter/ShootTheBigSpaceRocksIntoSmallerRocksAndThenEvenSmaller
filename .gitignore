@@ -1,0 +1,6 @@
+*.o
+*.obj
+.*.swp
+Makefile.qmake
+stbsrisrates
+.qmake.stash
