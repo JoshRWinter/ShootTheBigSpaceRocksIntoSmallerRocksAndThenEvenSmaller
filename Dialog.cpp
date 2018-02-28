@@ -1,6 +1,5 @@
 #include <QBoxLayout>
 #include <QFormLayout>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QMessageBox>
 
@@ -9,12 +8,13 @@
 dlg::Greeter::Greeter()
 {
 	setWindowTitle("Welcome to STBSRISRATES!");
+	setMinimumWidth(300);
 
 	auto vbox = new QVBoxLayout;
 	auto hbox = new QHBoxLayout;
 	setLayout(vbox);
 
-	auto address = new QLineEdit;
+	address = new QLineEdit;
 	address->setToolTip("Type in the IP Address of another player (who is hosting a match)");
 
 	auto connect = new QPushButton("Go");
@@ -24,6 +24,16 @@ dlg::Greeter::Greeter()
 	host->setToolTip("Host a match of your own, or play by yourself");
 	quit->setToolTip(":(");
 	connect->setMaximumWidth(60);
+
+	QObject::connect(host, &QPushButton::clicked, this, &QDialog::accept);
+	QObject::connect(connect, &QPushButton::clicked, [this]
+	{
+		if(address->text().length() == 0)
+			QMessageBox::critical(this, "Error", "You cannot leave the address field blank");
+		else
+			accept();
+	});
+	QObject::connect(quit, &QPushButton::clicked, this, &QDialog::reject);
 
 	hbox->addWidget(address);
 	hbox->addWidget(connect);
@@ -35,5 +45,5 @@ dlg::Greeter::Greeter()
 
 std::string dlg::Greeter::addr() const
 {
-	return connect_to;
+	return address->text().toStdString();
 }

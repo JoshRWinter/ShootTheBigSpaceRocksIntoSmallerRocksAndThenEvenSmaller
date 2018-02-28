@@ -2,6 +2,7 @@
 #define DIALOG_H
 
 #include <QDialog>
+#include <QLineEdit>
 
 namespace dlg
 {
@@ -13,7 +14,7 @@ namespace dlg
 		std::string addr() const;
 
 	private:
-		std::string connect_to;
+		QLineEdit *address;
 	};
 
 }

@@ -2,5 +2,6 @@
 #define STBSRISRATES_H
 
 #define MAX_PLAYERS 2
+#define MAX_DATAGRAM_SIZE 500
 
 #endif // STBSRISRATES_H

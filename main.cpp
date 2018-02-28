@@ -1,11 +1,13 @@
 #include <exception>
+#include <memory>
 
 #include <QApplication>
 #include <QMessageBox>
 
 #include "Dialog.h"
+#include "Server.h"
 
-static void run();
+static int run(QApplication&);
 
 #ifdef _WIN32
 static const int argc = 0;
@@ -19,25 +21,28 @@ int main(int argc, char **argv)
 
 	try
 	{
-		run();
+		return run(app);
 	}
 	catch(const std::exception &e)
 	{
 		QMessageBox::critical(NULL, "Critical Error", e.what());
-
-		return 1;
 	}
 
-	return app.exec();
+	return 1;
 }
 
-void run()
+int run(QApplication &app)
 {
+	std::unique_ptr<Server> server;
+
 	// greet the user
 	dlg::Greeter greeter;
-	if(greeter.exec())
-	{
-		const std::string &addr = greeter.addr();
-		QMessageBox::information(NULL, "info", (std::string("you are ") + (addr.length() > 0 ? "" : "not") + " hosting a match").c_str());
-	}
+	if(!greeter.exec())
+		return 0;
+
+	const std::string &addr = greeter.addr();
+	if(addr.size() == 0) // hosting
+		server.reset(new Server);
+
+	return app.exec();
 }
