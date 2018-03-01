@@ -6,6 +6,7 @@
 
 #include "Dialog.h"
 #include "Server.h"
+#include "Window.h"
 
 static int run(QApplication&);
 
@@ -50,7 +51,8 @@ int run(QApplication &app)
 	if(!connect.exec())
 		return 1;
 
-	QMessageBox::information(NULL, "secret", ("your secret is " + std::to_string(connect.secret())).c_str());
+	Window window(addr.length() > 0 ? addr : "127.0.0.1", connect.secret());
+	window.show();
 
 	return app.exec();
 }

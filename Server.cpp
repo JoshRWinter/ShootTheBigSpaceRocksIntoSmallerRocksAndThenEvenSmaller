@@ -64,6 +64,46 @@ void Server::accept()
 	state.player_list.push_back(player);
 }
 
+void Server::send()
+{
+}
+
+void Server::recv()
+{
+	int dgram_size;
+	unsigned offset = 0;
+	net::udp_id udpid;
+	while((dgram_size = udp.recv(net_buffer.data(), net_buffer.size(), udpid)) > 0)
+	{
+		while((int)offset < dgram_size)
+		{
+			// read type
+			lmp::Type type;
+			memcpy(&type, net_buffer.data() + offset, sizeof(type));
+			offset += sizeof(type);
+			switch(type)
+			{
+				case lmp::Type::CLIENT_INFO:
+				{
+					lmp::ClientInfo info(net_buffer, offset);
+					info.deserialize();
+					offset += info.size;
+					process(info);
+					break;
+				}
+				default:
+					log("unrecognized lump type: " + std::to_string(int(type)));
+					break;
+			}
+		}
+	}
+}
+
+void Server::process(const lmp::ClientInfo &info)
+{
+	log(std::string("up: ") + (info.up ? "true" : "false"));
+}
+
 void Server::loop(Server *s)
 {
 	Server &server = *s;
@@ -71,6 +111,8 @@ void Server::loop(Server *s)
 	while(server.running)
 	{
 		server.accept();
+
+		server.recv();
 
 		server.wait();
 	}

@@ -17,6 +17,12 @@
 
 namespace net{
 
+#ifdef _WIN32
+	const int WOULDBLOCK = WSAEWOULDBLOCK;
+#else
+	const int WOULDBLOCK = EWOULDBLOCK;
+#endif // _WIN32
+
 // tcp
 class tcp_server{
 public:
@@ -114,7 +120,7 @@ public:
 	operator bool()const;
 	void close();
 	void send(const void*,unsigned);
-	void recv(void*,unsigned);
+	int recv(void*,unsigned);
 	unsigned peek();
 	bool error()const;
 

@@ -31,6 +31,16 @@ static struct wsa_init
 }wsa_init_global;
 #endif // _WIN32
 
+// errno related stuff
+#define NET_WOULDBLOCK
+static int get_errno(){
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif // _WIN32
+}
+
 net::tcp_server::tcp_server(unsigned short port){
 	bind(port);
 }
@@ -537,7 +547,7 @@ void net::udp_server::close(){
 	}
 }
 
-// blocking send
+// non blocking send
 void net::udp_server::send(const void *buffer,int len,const udp_id &id){
 	if(sock==-1)
 		return;
@@ -549,20 +559,20 @@ void net::udp_server::send(const void *buffer,int len,const udp_id &id){
 
 	// no such thing as partial sends for sendto with udp
 	int result=sendto(sock,(const char*)buffer,len,0,(sockaddr*)&id.storage,id.len);
-	if(result!=len){
+	if(result!=len && get_errno() != net::WOULDBLOCK){
 		this->close();
 		return;
 	}
 }
 
-// blocking recv
+// non blocking recv
 int net::udp_server::recv(void *buffer,int len,udp_id &id){
 	if(sock==-1)
 		return 0;
 
 	// no partial receives
 	int result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&id.storage,&id.len);
-	if(result==-1){
+	if(result==-1 && get_errno() != net::WOULDBLOCK){
 		this->close();
 		return 0;
 	}
@@ -630,6 +640,15 @@ bool net::udp_server::bind(unsigned short port){
 	int reuse=1;
 	setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse,sizeof(int));
 #endif // _WIN32
+
+	// set to non blocking
+#ifdef _WIN32
+	u_long nonblock=1;
+	ioctlsocket(sock, FIONBIO, &nonblock);
+#else
+	fcntl(sock,F_SETFL,fcntl(sock,F_GETFL,0)|O_NONBLOCK); // set to non blocking
+#endif // _WIN32
+
 	if(::bind(sock,ai->ai_addr,ai->ai_addrlen)){
 		this->close();
 		return false;
@@ -693,27 +712,29 @@ void net::udp::send(const void *buffer,unsigned len){
 		return;
 
 	// no such thing as a partial send for udp with sendto
-	ssize_t result=sendto(sock,(const char*)buffer,len,0,(sockaddr*)ai->ai_addr,ai->ai_addrlen);
-	if((unsigned)result!=len){
+	const ssize_t result=sendto(sock,(const char*)buffer,len,0,(sockaddr*)ai->ai_addr,ai->ai_addrlen);
+	if((unsigned)result!=len && get_errno() != net::WOULDBLOCK){
 		this->close();
 		return;
 	}
 }
 
-void net::udp::recv(void *buffer,unsigned len){
+int net::udp::recv(void *buffer,unsigned len){
 	if(sock==-1)
-		return;
+		return -1;
 
 	// ignored
 	sockaddr_storage src_addr;
 	socklen_t src_len=sizeof(sockaddr_storage);
 
 	// no such thing as a partial send for udp with sendto
-	ssize_t result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&src_addr,&src_len);
-	if((unsigned)result!=len){
+	const ssize_t result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&src_addr,&src_len);
+	if((unsigned)result!=len && get_errno() != net::WOULDBLOCK){
 		this->close();
-		return;
+		return -1;
 	}
+
+	return result;
 }
 
 unsigned net::udp::peek(){
@@ -778,6 +799,14 @@ bool net::udp::target(const std::string &address,unsigned short port){
 	if(sock==-1){
 		return false;
 	}
+
+	// set to non blocking
+#ifdef _WIN32
+	u_long nonblock=1;
+	ioctlsocket(sock, FIONBIO, &nonblock);
+#else
+	fcntl(sock,F_SETFL,fcntl(sock,F_GETFL,0)|O_NONBLOCK); // set to non blocking
+#endif // _WIN32
 
 	return true;
 }

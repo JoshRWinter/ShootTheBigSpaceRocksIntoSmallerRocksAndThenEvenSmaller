@@ -74,12 +74,12 @@ namespace lmp
 		void serialize()
 		{
 			std::uint8_t bits = 0;
-			bits |= up << 8;
-			bits |= down << 7;
-			bits |= left << 6;
-			bits |= right << 5;
-			bits |= fire << 4;
-			bits |= pause << 3;
+			bits |= up << 7;
+			bits |= down << 6;
+			bits |= left << 5;
+			bits |= right << 4;
+			bits |= fire << 3;
+			bits |= pause << 2;
 
 			write(type);
 
@@ -95,15 +95,15 @@ namespace lmp
 			read(bits);
 			read(angle);
 
-			up = (bits >> 8) & 1;
-			down = (bits >> 7) & 1;
-			left = (bits >> 6) & 1;
-			right = (bits >> 5) & 1;
-			fire = (bits >> 4) & 1;
-			pause = (bits >> 3) & 1;
+			up = (bits >> 7) & 1;
+			down = (bits >> 6) & 1;
+			left = (bits >> 5) & 1;
+			right = (bits >> 4) & 1;
+			fire = (bits >> 3) & 1;
+			pause = (bits >> 2) & 1;
 		}
 
-		std::uint8_t up, down, left, right, fire, pause;
+		int up, down, left, right, fire, pause;
 		std::uint16_t angle;
 		std::uint32_t stepno;
 	};

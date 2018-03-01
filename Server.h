@@ -20,10 +20,15 @@ public:
 private:
 	void wait();
 	void accept();
+	void send();
+	void recv();
+	void process(const lmp::ClientInfo &);
 	static void loop(Server*);
 
 	ServerState state;
 	std::vector<Client> client_list;
+
+	lmp::rawbuf net_buffer;
 
 	mersenne random;
 	std::atomic<bool> running;
@@ -42,12 +47,21 @@ struct Client
 				return p;
 	}
 
+	static Client *by_secret(std::int32_t s, std::vector<Client> &list)
+	{
+		for(auto &c : list)
+			if(c.secret == s)
+				return &c;
+
+		return NULL;
+	}
+
 	static int last_id;;
 
 	net::udp_id udpid;
 
-	int32_t secret;
-	int32_t id;
+	std::int32_t secret;
+	std::int32_t id;
 };
 
 #endif // SERVER_H

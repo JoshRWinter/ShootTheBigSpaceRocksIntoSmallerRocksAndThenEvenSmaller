@@ -5,12 +5,16 @@ HEADERS += network.h
 HEADERS += ServerState.h
 HEADERS += Lump.h
 HEADERS += Log.h
+HEADERS += Window.h
+HEADERS += Asteroids.h
 
 SOURCES += main.cpp
 SOURCES += Dialog.cpp
 SOURCES += Server.cpp
 SOURCES += network.cpp
 SOURCES += Log.cpp
+SOURCES += Window.cpp
+SOURCES += Asteroids.cpp
 
 CONFIG += debug console
 
