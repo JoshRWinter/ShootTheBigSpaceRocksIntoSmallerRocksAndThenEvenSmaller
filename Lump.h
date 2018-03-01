@@ -10,23 +10,7 @@
 
 namespace lmp
 {
-	class LumpException : std::exception
-	{
-	public:
-		LumpException(const std::string &msg) : message(msg) {}
-		virtual const char *what() const noexcept { return message.c_str(); }
-
-	private:
-		const std::string message;
-	};
-
-	enum class Type : std::uint8_t
-	{
-		CLIENT_INFO,
-		SERVER_INFO,
-		PLAYER,
-		ASTEROID
-	};
+	enum class Type : std::uint8_t;
 
 	struct netbuf
 	{
@@ -34,10 +18,7 @@ namespace lmp
 		~netbuf()
 		{
 			if(size > 0 && offset != size)
-			{
-				log("unread lump objects present on the net buffer: offset = " + std::to_string(offset) + ", size = " + std::to_string(size));
-				std::abort();
-			}
+				hcf("unread lump objects present on the net buffer: offset = " + std::to_string(offset) + ", size = " + std::to_string(size));
 		}
 
 		netbuf(const netbuf&) = delete;
@@ -108,7 +89,7 @@ namespace lmp
 		{
 			const unsigned len = sizeof(subject);
 			if(nbuf.offset + len > nbuf.raw.size())
-				throw LumpException("buffer overwrite when serializing");
+				hcf("buffer overwrite when serializing");
 
 			memcpy(nbuf.raw.data() + nbuf.offset, &subject, len);
 			nbuf.offset += len;
@@ -118,7 +99,7 @@ namespace lmp
 		{
 			const unsigned len = sizeof(subject);
 			if(nbuf.offset + len > nbuf.raw.size())
-				throw LumpException("buffer overread when deserializing");
+				hcf("buffer overread when deserializing");
 
 			memcpy(&subject, nbuf.raw.data() + nbuf.offset, len);
 			nbuf.offset += len;
@@ -133,6 +114,14 @@ namespace lmp
 	//   OBJECTS
 	// *********************
 	// *********************
+
+	enum class Type : std::uint8_t
+	{
+		CLIENT_INFO,
+		SERVER_INFO,
+		PLAYER,
+		ASTEROID
+	};
 
 	struct ClientInfo : Lump
 	{

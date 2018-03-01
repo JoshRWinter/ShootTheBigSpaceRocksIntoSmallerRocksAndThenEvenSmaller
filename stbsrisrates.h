@@ -7,6 +7,11 @@
 
 #include "Log.h"
 
+#define MAX_PLAYERS 2
+#define MAX_DATAGRAM_SIZE 500
+
+#define hcf(msg) {log(std::string("\033[35;1mFatal Error:\033[0m ") + msg);std::abort();}
+
 class mersenne
 {
 public:
@@ -26,8 +31,5 @@ public:
 private:
 	std::mt19937 generator;
 };
-
-#define MAX_PLAYERS 2
-#define MAX_DATAGRAM_SIZE 500
 
 #endif // STBSRISRATES_H

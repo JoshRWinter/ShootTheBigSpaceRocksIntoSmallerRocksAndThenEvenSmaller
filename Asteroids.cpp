@@ -5,7 +5,6 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
 {
-	log("setting to " + addr);
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
 }
