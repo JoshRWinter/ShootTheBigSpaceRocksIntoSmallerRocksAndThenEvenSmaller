@@ -9,21 +9,49 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 		throw std::runtime_error("could not initialize udp socket");
 }
 
-void Asteroids::send(bool up, bool down, bool left, bool right, bool fire, bool pause, float angle)
+void Asteroids::step()
+{
+	recv();
+}
+
+void Asteroids::input(const Controls &controls)
 {
 	lmp::netbuf net_buffer;
 
 	lmp::ClientInfo info;
-	info.up = up;
-	info.down = down;
-	info.left = left;
-	info.right = right;
-	info.fire = fire;
-	info.pause = pause;
-	info.angle = angle;
+	info.secret = udp_secret;
+	info.up = controls.up;
+	info.down = controls.down;
+	info.left = controls.left;
+	info.right = controls.right;
+	info.fire = controls.fire;
+	info.pause = controls.pause;
+	info.angle = controls.angle;
 	info.stepno = last_step;
 
 	net_buffer.push(info);
 
 	udp.send(net_buffer.raw.data(), net_buffer.size);
+}
+
+void Asteroids::recv()
+{
+	lmp::netbuf buffer;
+
+	while(lmp::netbuf::get(buffer, udp))
+	{
+		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
+		if(info == NULL)
+		{
+			log("no server info present in net buffer");
+			continue;
+		}
+
+		integrate(*info);
+	}
+}
+
+void Asteroids::integrate(const lmp::ServerInfo &info)
+{
+	last_step = info.stepno;
 }

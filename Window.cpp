@@ -11,13 +11,12 @@ Window::Window(const std::string &addr, int secret)
 	auto timer = new QTimer(this);
 	QObject::connect(timer, &QTimer::timeout, this, &Window::step);
 	timer->start(16);
-
-	up = down = left = right = fire = false;
 }
 
 void Window::step()
 {
-	game.send(up, down, left, right, fire, false, 0.0f);
+	game.input(controls);
+	game.step();
 	repaint();
 }
 
@@ -40,7 +39,16 @@ void Window::process_keys(int key, bool press)
 	switch(key)
 	{
 		case Qt::Key_Up:
-			up = press;
+			controls.up = press;
+			break;
+		case Qt::Key_Down:
+			controls.down = press;
+			break;
+		case Qt::Key_Right:
+			controls.right = press;
+			break;
+		case Qt::Key_Left:
+			controls.left = press;
 			break;
 	}
 }

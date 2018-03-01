@@ -47,10 +47,9 @@ namespace lmp
 		template <typename T> void push(T &lump)
 		{
 			lump.serialize(*this);
-			size = offset;
 		}
 
-		template <typename T> T *pop()
+		template <typename T> const T *pop()
 		{
 			if(offset >= size)
 				return NULL;
@@ -93,6 +92,7 @@ namespace lmp
 
 			memcpy(nbuf.raw.data() + nbuf.offset, &subject, len);
 			nbuf.offset += len;
+			nbuf.size += len;
 		}
 
 		template <typename T> void read(T &subject, netbuf &nbuf)
@@ -139,6 +139,7 @@ namespace lmp
 
 			write(type, nbuf);
 
+			write(secret, nbuf);
 			write(stepno, nbuf);
 			write(bits, nbuf);
 			write(angle, nbuf);
@@ -147,6 +148,7 @@ namespace lmp
 		void deserialize(netbuf &nbuf)
 		{
 			std::uint8_t bits = 0;
+			read(secret, nbuf);
 			read(stepno, nbuf);
 			read(bits, nbuf);
 			read(angle, nbuf);
@@ -162,6 +164,7 @@ namespace lmp
 		int up, down, left, right, fire, pause;
 		std::uint16_t angle;
 		std::uint32_t stepno;
+		std::int32_t secret;
 	};
 
 	struct ServerInfo : Lump

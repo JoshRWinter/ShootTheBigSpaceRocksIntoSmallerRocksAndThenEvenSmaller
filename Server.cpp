@@ -66,6 +66,16 @@ void Server::accept()
 
 void Server::send()
 {
+	for(const Client &client : client_list)
+	{
+		if(!client.udpid.initialized)
+			continue;
+
+		lmp::netbuf buffer;
+		compile_datagram(client, buffer);
+
+		udp.send(buffer.raw.data(), buffer.size, client.udpid);
+	}
 }
 
 void Server::recv()
@@ -75,18 +85,43 @@ void Server::recv()
 
 	while(lmp::netbuf::get(net_buffer, udp, udpid))
 	{
-		// read all client info objects
-		lmp::ClientInfo *info = net_buffer.pop<lmp::ClientInfo>();
+		// udpid related nonsense
+		const lmp::ClientInfo *const info = net_buffer.pop<lmp::ClientInfo>();
 		if(info == NULL)
-			log("NULL NULL NULL");
-		else
-			process(*info);
+		{
+			log("no client info present in net buffer");
+			continue;
+		}
+
+		Client *const client = Client::by_secret(info->secret, client_list);
+		if(client == NULL)
+		{
+			log("received a datagram from an unrecognized client");
+			continue;
+		}
+		else if(!client->udpid.initialized)
+		{
+			client->udpid = udpid;
+		}
+
+		integrate_client(*client, *info);
 	}
 }
 
-void Server::process(const lmp::ClientInfo &info)
+void Server::compile_datagram(const Client&, lmp::netbuf &buffer)
 {
-	log(std::string("up: ") + (info.up ? "true" : "false"));
+	lmp::ServerInfo info;
+	info.stepno = state.stepno;
+	buffer.push(info);
+}
+
+void Server::integrate_client(const Client&, const lmp::ClientInfo&)
+{
+}
+
+void Server::step()
+{
+	++state.stepno;
 }
 
 void Server::loop(Server *s)
@@ -95,10 +130,14 @@ void Server::loop(Server *s)
 
 	while(server.running)
 	{
-		server.accept();
+		server.accept(); // accept or reject new clients
 
-		server.recv();
+		server.recv(); // receive data from clients
 
-		server.wait();
+		server.step(); // one world-simulation step
+
+		server.send(); // send data to clients
+
+		server.wait(); // sleep (or spinlock) until time for next loop
 	}
 }

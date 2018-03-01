@@ -21,9 +21,7 @@ private:
 	void keyReleaseEvent(QKeyEvent*);
 	void process_keys(int, bool);
 
-	bool up, down, left, right, fire;
-	float angle;
-
+	Controls controls;
 	Asteroids game;
 };
 

@@ -7,7 +7,7 @@
 
 #include "network.h"
 #include "Lump.h"
-#include "ServerState.h"
+#include "GameState.h"
 
 struct Client;
 
@@ -22,18 +22,22 @@ private:
 	void accept();
 	void send();
 	void recv();
-	void process(const lmp::ClientInfo &);
+	void compile_datagram(const Client&, lmp::netbuf&);
+	void integrate_client(const Client&, const lmp::ClientInfo&);
+	void step();
 	static void loop(Server*);
 
-	ServerState state;
+	GameState state;
 	std::vector<Client> client_list;
 
-	mersenne random;
-	std::atomic<bool> running;
+	mersenne random; // prng
+	std::atomic<bool> running; // flag to tell server to exit
+
 	net::tcp_server tcp;
 	net::udp_server udp;
-	std::chrono::time_point<std::chrono::high_resolution_clock> last;
-	std::thread background;
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> last; // time point of last simulation step
+	std::thread background; // handle for service thread
 };
 
 struct Client
