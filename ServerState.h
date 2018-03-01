@@ -22,12 +22,20 @@ struct Entity
 #define PLAYER_HEIGHT 16
 struct Player : Entity
 {
+	Player(int ident)
+		: id(ident)
+		, health(100) {}
+
 	int id;
 	int health;
 };
 
 struct Asteroid : Entity
 {
+	Asteroid(AsteroidType t, int ident)
+		: type(t)
+		, id(ident) {}
+
 	AsteroidType type;
 	int id;
 	int health;
@@ -42,7 +50,7 @@ struct ServerState
 {
 	std::vector<Asteroid> asteroid_list;
 	std::vector<Bullet> bullet_list;
-	Player player_list[MAX_PLAYERS];
+	std::vector<Player> player_list;
 };
 
 #endif // SERVERSTATE_H

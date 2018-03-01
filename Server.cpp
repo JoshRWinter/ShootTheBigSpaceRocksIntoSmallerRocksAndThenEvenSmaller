@@ -2,6 +2,8 @@
 
 #include "Server.h"
 
+int Client::last_id = 0;
+
 Server::Server()
 	: running(true)
 	, tcp(SERVER_PORT)
@@ -12,6 +14,7 @@ Server::Server()
 	if(!tcp || !udp)
 	{
 		running = false;
+		background.join();
 		throw std::runtime_error("Could not bind to port " + std::to_string(SERVER_PORT));
 	}
 }
@@ -37,12 +40,38 @@ void Server::wait()
 	last = current;
 }
 
+void Server::accept()
+{
+	const int sock = tcp.accept();
+
+	if(sock == -1)
+		return;
+
+	net::tcp stream(sock);
+	const uint8_t accept_client = client_list.size() < MAX_PLAYERS;
+	stream.send_block(&accept_client, sizeof(accept_client));
+
+	if(!accept_client)
+		return;
+
+	Client client;
+	Player player(++Client::last_id);
+	client.id = player.id;
+	client.secret = random(0, 500'000'000);
+	stream.send_block(&client.secret, sizeof(client.secret));
+
+	client_list.push_back(client);
+	state.player_list.push_back(player);
+}
+
 void Server::loop(Server *s)
 {
 	Server &server = *s;
 
 	while(server.running)
 	{
+		server.accept();
+
 		server.wait();
 	}
 }

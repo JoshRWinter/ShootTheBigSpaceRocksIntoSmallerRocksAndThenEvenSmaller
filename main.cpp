@@ -17,6 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, INT)
 int main(int argc, char **argv)
 #endif // _WIN32
 {
+	srand(time(NULL));
 	QApplication app(argc, argv);
 
 	try
@@ -43,6 +44,13 @@ int run(QApplication &app)
 	const std::string &addr = greeter.addr();
 	if(addr.size() == 0) // hosting
 		server.reset(new Server);
+
+	// connect dialog
+	dlg::Connect connect(addr.length() > 0 ? addr : "127.0.0.1");
+	if(!connect.exec())
+		return 1;
+
+	QMessageBox::information(NULL, "secret", ("your secret is " + std::to_string(connect.secret())).c_str());
 
 	return app.exec();
 }
