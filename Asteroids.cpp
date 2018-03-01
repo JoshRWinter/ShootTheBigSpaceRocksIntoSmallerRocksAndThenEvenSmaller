@@ -12,7 +12,9 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 
 void Asteroids::send(bool up, bool down, bool left, bool right, bool fire, bool pause, float angle)
 {
-	lmp::ClientInfo info(net_buffer, 0);
+	lmp::netbuf net_buffer;
+
+	lmp::ClientInfo info;
 	info.up = up;
 	info.down = down;
 	info.left = left;
@@ -21,7 +23,8 @@ void Asteroids::send(bool up, bool down, bool left, bool right, bool fire, bool 
 	info.pause = pause;
 	info.angle = angle;
 	info.stepno = last_step;
-	info.serialize();
 
-	udp.send(net_buffer.data(), info.size);
+	net_buffer.push(info);
+
+	udp.send(net_buffer.raw.data(), net_buffer.size);
 }

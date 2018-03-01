@@ -28,8 +28,6 @@ private:
 	ServerState state;
 	std::vector<Client> client_list;
 
-	lmp::rawbuf net_buffer;
-
 	mersenne random;
 	std::atomic<bool> running;
 	net::tcp_server tcp;

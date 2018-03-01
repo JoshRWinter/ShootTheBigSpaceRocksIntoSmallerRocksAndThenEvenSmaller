@@ -10,68 +10,135 @@
 
 namespace lmp
 {
-	typedef std::array<std::uint8_t, MAX_DATAGRAM_SIZE> rawbuf;
-
-	class LumpException : public std::exception
+	class LumpException : std::exception
 	{
 	public:
-		virtual const char *what() const noexcept
-		{
-			return "buffer overrun when serializing or deserializing";
-		}
+		LumpException(const std::string &msg) : message(msg) {}
+		virtual const char *what() const noexcept { return message.c_str(); }
+
+	private:
+		const std::string message;
 	};
 
 	enum class Type : std::uint8_t
 	{
 		CLIENT_INFO,
 		SERVER_INFO,
-		ASTEROID,
-		PLAYER
+		PLAYER,
+		ASTEROID
+	};
+
+	struct netbuf
+	{
+		netbuf() : offset(0), size(0) {}
+		~netbuf()
+		{
+			if(size > 0 && offset != size)
+			{
+				log("unread lump objects present on the net buffer: offset = " + std::to_string(offset) + ", size = " + std::to_string(size));
+				std::abort();
+			}
+		}
+
+		netbuf(const netbuf&) = delete;
+		void operator=(const netbuf&) = delete;
+
+		void reset()
+		{
+			size = 0;
+			offset = 0;
+		}
+
+		static bool get(netbuf &buf, net::udp_server &udp, net::udp_id &id)
+		{
+			buf.reset();
+			buf.size = udp.recv(buf.raw.data(), buf.raw.size(), id);
+			return buf.size > 0;
+		}
+
+		static bool get(netbuf &buf, net::udp &udp)
+		{
+			buf.reset();
+			buf.size = udp.recv(buf.raw.data(), buf.raw.size());
+			return buf.size > 0;
+		}
+
+		template <typename T> void push(T &lump)
+		{
+			lump.serialize(*this);
+			size = offset;
+		}
+
+		template <typename T> T *pop()
+		{
+			if(offset >= size)
+				return NULL;
+
+			static T static_lump;
+
+			// read type
+			Type type;
+			memcpy(&type, raw.data() + offset, sizeof(type));
+
+			if(type != static_lump.type)
+				return NULL;
+
+			offset += sizeof(type);
+			static_lump.deserialize(*this);
+
+			return &static_lump;
+		}
+
+		std::array<std::uint8_t, MAX_DATAGRAM_SIZE> raw;
+		unsigned offset;
+		unsigned size;
 	};
 
 	struct Lump
 	{
 	public:
 		const Type type;
-		rawbuf &buffer;
-		const unsigned offset;
-		unsigned size;
 
-		Lump(Type tp, rawbuf &b, unsigned offs) : type(tp), buffer(b), offset(offs), size(0) {}
-		virtual void serialize() = 0;
-		virtual void deserialize() = 0;
+		Lump(Type tp) : type(tp) {}
+		virtual void serialize(netbuf&) = 0;
+		virtual void deserialize(netbuf&) = 0;
 
 	protected:
-		template <typename T> int write(T subject)
+		template <typename T> void write(T subject, netbuf &nbuf)
 		{
 			const unsigned len = sizeof(subject);
-			if(offset + len > buffer.size())
-				throw LumpException();
+			if(nbuf.offset + len > nbuf.raw.size())
+				throw LumpException("buffer overwrite when serializing");
 
-			memcpy(buffer.data() + offset + size, &subject, len);
-			size += len;
-
-			return len;
+			memcpy(nbuf.raw.data() + nbuf.offset, &subject, len);
+			nbuf.offset += len;
 		}
 
-		template <typename T> int read(T &subject)
+		template <typename T> void read(T &subject, netbuf &nbuf)
 		{
 			const unsigned len = sizeof(subject);
-			if(offset + len > buffer.size())
-				throw LumpException();
+			if(nbuf.offset + len > nbuf.raw.size())
+				throw LumpException("buffer overread when deserializing");
 
-			memcpy(&subject, buffer.data() + offset + size, len);
-			size += len;
-
-			return len;
+			memcpy(&subject, nbuf.raw.data() + nbuf.offset, len);
+			nbuf.offset += len;
 		}
 	};
 
+	// *********************
+	// *********************
+	// APPLICATION
+	//  SPECIFIC
+	//    LUMP
+	//   OBJECTS
+	// *********************
+	// *********************
+
 	struct ClientInfo : Lump
 	{
-		ClientInfo(rawbuf &buf, unsigned offset) : Lump(Type::CLIENT_INFO, buf, offset) {}
+		ClientInfo() : Lump(Type::CLIENT_INFO) {}
 
-		void serialize()
+		void serialize(netbuf &nbuf)
 		{
 			std::uint8_t bits = 0;
 			bits |= up << 7;
@@ -81,19 +148,19 @@ namespace lmp
 			bits |= fire << 3;
 			bits |= pause << 2;
 
-			write(type);
+			write(type, nbuf);
 
-			write(stepno);
-			write(bits);
-			write(angle);
+			write(stepno, nbuf);
+			write(bits, nbuf);
+			write(angle, nbuf);
 		}
 
-		void deserialize()
+		void deserialize(netbuf &nbuf)
 		{
 			std::uint8_t bits = 0;
-			read(stepno);
-			read(bits);
-			read(angle);
+			read(stepno, nbuf);
+			read(bits, nbuf);
+			read(angle, nbuf);
 
 			up = (bits >> 7) & 1;
 			down = (bits >> 6) & 1;
@@ -110,18 +177,18 @@ namespace lmp
 
 	struct ServerInfo : Lump
 	{
-		ServerInfo(rawbuf &b, unsigned offs) : Lump(Type::SERVER_INFO, b, offs) {}
+		ServerInfo() : Lump(Type::SERVER_INFO) {}
 
-		void serialize()
+		void serialize(netbuf &nbuf)
 		{
-			write(type);
+			write(type, nbuf);
 
-			write(stepno);
+			write(stepno, nbuf);
 		}
 
-		void deserialize()
+		void deserialize(netbuf &nbuf)
 		{
-			read(stepno);
+			read(stepno, nbuf);
 		}
 
 		uint32_t stepno;
@@ -129,26 +196,26 @@ namespace lmp
 
 	struct Player : Lump
 	{
-		Player(rawbuf &buf, unsigned offset) : Lump(Type::PLAYER, buf, offset) {}
+		Player() : Lump(Type::PLAYER) {}
 
-		void serialize()
+		void serialize(netbuf &nbuf)
 		{
-			write(type);
+			write(type, nbuf);
 
-			write(x);
-			write(y);
-			write(xv);
-			write(yv);
-			write(shooting);
+			write(x, nbuf);
+			write(y, nbuf);
+			write(xv, nbuf);
+			write(yv, nbuf);
+			write(shooting, nbuf);
 		}
 
-		void deserialize()
+		void deserialize(netbuf &nbuf)
 		{
-			read(x);
-			read(y);
-			read(xv);
-			read(yv);
-			read(shooting);
+			read(x, nbuf);
+			read(y, nbuf);
+			read(xv, nbuf);
+			read(yv, nbuf);
+			read(shooting, nbuf);
 		};
 
 		int16_t x, y;

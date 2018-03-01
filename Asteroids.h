@@ -11,7 +11,6 @@ public:
 	void send(bool, bool, bool, bool, bool, bool, float);
 
 private:
-	lmp::rawbuf net_buffer;
 	const std::int32_t udp_secret;
 	net::udp udp;
 	std::uint32_t last_step;

@@ -70,32 +70,17 @@ void Server::send()
 
 void Server::recv()
 {
-	int dgram_size;
-	unsigned offset = 0;
 	net::udp_id udpid;
-	while((dgram_size = udp.recv(net_buffer.data(), net_buffer.size(), udpid)) > 0)
+	lmp::netbuf net_buffer;
+
+	while(lmp::netbuf::get(net_buffer, udp, udpid))
 	{
-		while((int)offset < dgram_size)
-		{
-			// read type
-			lmp::Type type;
-			memcpy(&type, net_buffer.data() + offset, sizeof(type));
-			offset += sizeof(type);
-			switch(type)
-			{
-				case lmp::Type::CLIENT_INFO:
-				{
-					lmp::ClientInfo info(net_buffer, offset);
-					info.deserialize();
-					offset += info.size;
-					process(info);
-					break;
-				}
-				default:
-					log("unrecognized lump type: " + std::to_string(int(type)));
-					break;
-			}
-		}
+		// read all client info objects
+		lmp::ClientInfo *info = net_buffer.pop<lmp::ClientInfo>();
+		if(info == NULL)
+			log("NULL NULL NULL");
+		else
+			process(*info);
 	}
 }
 

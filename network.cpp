@@ -572,10 +572,14 @@ int net::udp_server::recv(void *buffer,int len,udp_id &id){
 
 	// no partial receives
 	int result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&id.storage,&id.len);
-	if(result==-1 && get_errno() != net::WOULDBLOCK){
-		this->close();
+	if(result==-1){
+		if(get_errno() == net::WOULDBLOCK)
+			return 0;
+		else
+			this->close();
 		return 0;
 	}
+
 	id.initialized=true;
 
 	return result;
@@ -729,9 +733,12 @@ int net::udp::recv(void *buffer,unsigned len){
 
 	// no such thing as a partial send for udp with sendto
 	const ssize_t result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&src_addr,&src_len);
-	if((unsigned)result!=len && get_errno() != net::WOULDBLOCK){
-		this->close();
-		return -1;
+	if(result==-1){
+		if(get_errno() == net::WOULDBLOCK)
+			return 0;
+		else
+			this->close();
+		return 0;
 	}
 
 	return result;
