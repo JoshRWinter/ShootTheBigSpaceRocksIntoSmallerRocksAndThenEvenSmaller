@@ -1,4 +1,5 @@
 #include "GameState.h"
+#include "Server.h"
 
 Entity::Entity(float X, float Y, float W, float H, float ROT, float XV, float YV)
 	: x(X)
@@ -26,10 +27,51 @@ bool Entity::collide(const Entity &subject, float tolerance) const
 // *********
 
 Player::Player(int ident)
-	: Entity(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT)
+	: Entity((WINDOW_WIDTH / 2) - (PLAYER_WIDTH / 2), (WINDOW_HEIGHT / 2) - (PLAYER_HEIGHT / 2), PLAYER_WIDTH, PLAYER_HEIGHT)
 	, id(ident)
+	, shooting(false)
 	, health(100)
 {}
+
+void Player::step_server(Player &player, const Controls &controls)
+{
+	if(controls.left || controls.right)
+	{
+		if(controls.right)
+			player.xv += PLAYER_SPEEDUP;
+		if(controls.left)
+			player.xv -= PLAYER_SPEEDUP;
+	}
+	else
+	{
+		zerof(&player.xv, PLAYER_SPEEDUP);
+	}
+
+	if(controls.up || controls.down)
+	{
+		if(controls.up)
+			player.yv -= PLAYER_SPEEDUP;
+		if(controls.down)
+			player.yv += PLAYER_SPEEDUP;
+	}
+	else
+	{
+		zerof(&player.yv, PLAYER_SPEEDUP);
+	}
+
+	// clamp
+	if(player.xv > PLAYER_MAX_SPEED)
+		player.xv = PLAYER_MAX_SPEED;
+	else if(player.xv < -PLAYER_MAX_SPEED)
+		player.xv = -PLAYER_MAX_SPEED;
+	if(player.yv > PLAYER_MAX_SPEED)
+		player.yv = PLAYER_MAX_SPEED;
+	else if(player.yv < -PLAYER_MAX_SPEED)
+		player.yv = -PLAYER_MAX_SPEED;
+
+	player.x += player.xv;
+	player.y += player.yv;
+}
 
 // *********
 // *********

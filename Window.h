@@ -6,9 +6,6 @@
 
 #include "Asteroids.h"
 
-#define WINDOW_WIDTH 600
-#define WINDOW_HEIGHT 500
-
 class Window : public QWidget
 {
 public:
@@ -22,6 +19,7 @@ private:
 	void process_keys(int, bool);
 
 	Controls controls;
+	const GameState *state;
 	Asteroids game;
 };
 

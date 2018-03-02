@@ -9,12 +9,15 @@ class Asteroids
 {
 public:
 	Asteroids(const std::string&, std::int32_t);
-	void step();
+	const GameState *step();
 	void input(const Controls&);
 
 private:
 	void recv();
 	void integrate(const lmp::ServerInfo&);
+	void integrate(const lmp::Player&);
+
+	GameState state;
 
 	const std::int32_t udp_secret;
 	net::udp udp;

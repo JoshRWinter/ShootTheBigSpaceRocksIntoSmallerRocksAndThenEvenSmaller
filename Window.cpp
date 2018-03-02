@@ -1,9 +1,11 @@
+#include <QPainter>
 #include <QTimer>
 
 #include "Window.h"
 
 Window::Window(const std::string &addr, int secret)
-	: game(addr, secret)
+	: state(NULL)
+	, game(addr, secret)
 {
 	resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setWindowTitle("Shoot The Big Space Rocks Into Smaller Rocks And Then Even Smaller");
@@ -16,12 +18,23 @@ Window::Window(const std::string &addr, int secret)
 void Window::step()
 {
 	game.input(controls);
-	game.step();
+	state = game.step();
+
 	repaint();
 }
 
 void Window::paintEvent(QPaintEvent*)
 {
+	if(state == NULL)
+		return;
+
+	QPainter painter(this);
+
+	// draw players
+	for(const Player &player : state->player_list)
+	{
+		painter.drawEllipse(player.x, player.y, player.w, player.h);
+	}
 }
 
 void Window::keyPressEvent(QKeyEvent *event)

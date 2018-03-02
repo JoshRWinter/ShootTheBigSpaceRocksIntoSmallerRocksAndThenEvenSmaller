@@ -110,18 +110,45 @@ void Server::recv()
 
 void Server::compile_datagram(const Client&, lmp::netbuf &buffer)
 {
+	// server info
 	lmp::ServerInfo info;
 	info.stepno = state.stepno;
 	buffer.push(info);
+
+	// players
+	for(const Player &p : state.player_list)
+	{
+		lmp::Player player;
+
+		player.id = p.id;
+		player.x = p.x;
+		player.y = p.y;
+		player.xv = p.xv;
+		player.yv = p.yv;
+		player.shooting = p.shooting;
+		player.health = p.health;
+
+		buffer.push(player);
+	}
 }
 
-void Server::integrate_client(const Client&, const lmp::ClientInfo&)
+void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 {
+	client.controls.up = lump.up == 1;
+	client.controls.right = lump.right == 1;
+	client.controls.left = lump.left == 1;
+	client.controls.down = lump.down == 1;
+	client.controls.fire = lump.fire == 1;
+	client.controls.angle = lump.angle;
 }
 
 void Server::step()
 {
 	++state.stepno;
+
+	// process players
+	for(Client &client : client_list)
+		Player::step_server(client.player(state.player_list), client.controls);
 }
 
 void Server::loop(Server *s)

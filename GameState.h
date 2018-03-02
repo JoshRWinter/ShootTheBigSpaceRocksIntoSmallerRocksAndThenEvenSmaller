@@ -33,11 +33,16 @@ struct Entity
 
 #define PLAYER_WIDTH 20
 #define PLAYER_HEIGHT 16
+#define PLAYER_SPEEDUP 1
+#define PLAYER_MAX_SPEED 4
 struct Player : Entity
 {
 	Player(int);
 
+	static void step_server(Player&, const Controls&);
+
 	const int id;
+	bool shooting;
 	int health;
 };
 

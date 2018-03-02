@@ -23,7 +23,7 @@ private:
 	void send();
 	void recv();
 	void compile_datagram(const Client&, lmp::netbuf&);
-	void integrate_client(const Client&, const lmp::ClientInfo&);
+	void integrate_client(Client&, const lmp::ClientInfo&);
 	void step();
 	static void loop(Server*);
 
@@ -42,11 +42,13 @@ private:
 
 struct Client
 {
-	Player player(std::vector<Player> &list)
+	Player &player(std::vector<Player> &list)
 	{
 		for(auto &p : list)
 			if(p.id == id)
 				return p;
+
+		hcf("could not id player " + std::to_string(id));
 	}
 
 	static Client *by_secret(std::int32_t s, std::vector<Client> &list)
@@ -60,8 +62,9 @@ struct Client
 
 	static int last_id;;
 
-	net::udp_id udpid;
+	Controls controls;
 
+	net::udp_id udpid;
 	std::int32_t secret;
 	std::int32_t id;
 };

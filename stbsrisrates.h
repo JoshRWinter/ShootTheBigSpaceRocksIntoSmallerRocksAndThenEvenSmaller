@@ -10,6 +10,9 @@
 #define MAX_PLAYERS 2
 #define MAX_DATAGRAM_SIZE 500
 
+#define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 500
+
 #define hcf(msg) {log(std::string("\033[35;1mFatal Error:\033[0m ") + msg);std::abort();}
 
 class mersenne
@@ -31,5 +34,21 @@ public:
 private:
 	std::mt19937 generator;
 };
+
+inline void zerof(float *const subject, float step)
+{
+	if(*subject > 0.0f)
+	{
+		*subject -= step;
+		if(*subject < 0.0f)
+			*subject = 0.0f;
+	}
+	else if(*subject < 0.0f)
+	{
+		*subject += step;
+		if(*subject > 0.0f)
+			*subject = 0.0f;
+	}
+}
 
 #endif // STBSRISRATES_H

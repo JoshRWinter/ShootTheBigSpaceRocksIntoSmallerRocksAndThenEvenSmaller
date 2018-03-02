@@ -183,7 +183,7 @@ namespace lmp
 			read(stepno, nbuf);
 		}
 
-		uint32_t stepno;
+		std::uint32_t stepno;
 	};
 
 	struct Player : Lump
@@ -194,25 +194,31 @@ namespace lmp
 		{
 			write(type, nbuf);
 
+			write(id, nbuf);
 			write(x, nbuf);
 			write(y, nbuf);
 			write(xv, nbuf);
 			write(yv, nbuf);
 			write(shooting, nbuf);
+			write(health, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
+			read(id, nbuf);
 			read(x, nbuf);
 			read(y, nbuf);
 			read(xv, nbuf);
 			read(yv, nbuf);
 			read(shooting, nbuf);
+			read(health, nbuf);
 		};
 
-		int16_t x, y;
+		std::int8_t id;
+		std::int16_t x, y;
 		float xv, yv;
-		uint8_t shooting;
+		std::uint8_t shooting;
+		std::uint8_t health;
 	};
 }
 
