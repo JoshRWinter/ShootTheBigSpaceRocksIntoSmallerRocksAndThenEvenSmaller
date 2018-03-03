@@ -38,6 +38,21 @@ void Server::wait()
 	}while(diff.count() < 16666000);
 
 	last = current;
+
+	// frequency check
+	{
+		static int sps, second;
+		const int current = time(NULL);
+		if(current != second)
+		{
+			if(state.stepno > 200 && sps < 56)
+				log("sps == " + std::to_string(sps) + " -- having trouble keeping up");
+			sps = 0;
+			second = current;
+		}
+		else
+			++sps;
+	}
 }
 
 void Server::accept()
@@ -149,6 +164,11 @@ void Server::step()
 	// process players
 	for(Client &client : client_list)
 		Player::step_server(client.player(state.player_list), client.controls);
+
+	// add this state to the history
+	history.push(state);
+	if(history.size() > STATE_HISTORY)
+		history.pop();
 }
 
 void Server::loop(Server *s)

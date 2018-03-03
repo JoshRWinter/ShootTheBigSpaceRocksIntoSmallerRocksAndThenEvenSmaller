@@ -28,6 +28,7 @@ private:
 	static void loop(Server*);
 
 	GameState state;
+	std::queue<GameState> history;
 	std::vector<Client> client_list;
 
 	mersenne random; // prng

@@ -2,8 +2,11 @@
 #define GAMESTATE_H
 
 #include <vector>
+#include <queue>
 
 #include "stbsrisrates.h"
+
+#define STATE_HISTORY 256
 
 enum class AsteroidType : std::uint8_t
 {
