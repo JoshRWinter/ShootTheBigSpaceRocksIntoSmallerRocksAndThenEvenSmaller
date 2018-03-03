@@ -236,29 +236,27 @@ namespace lmp
 
 	struct Remove : Lump
 	{
-		Remove() : Lump(Type::REMOVE) {}
-		Remove(Type rt, std::int32_t ident)
+		Remove() : Lump(Type::REMOVE), ref(Entity::Type(), 0) {}
+		Remove(Entity::Reference er)
 			: Lump(Type::REMOVE)
-			, remove_type(rt)
-			, id(ident)
+			, ref(er)
 		{}
 
 		void serialize(netbuf &nbuf) const
 		{
 			write(type, nbuf);
 
-			write(remove_type, nbuf);
-			write(id, nbuf);
+			write(ref.type, nbuf);
+			write(ref.id, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
-			read(remove_type, nbuf);
-			read(id, nbuf);
+			read(ref.type, nbuf);
+			read(ref.id, nbuf);
 		}
 
-		Type remove_type;
-		std::int32_t id;
+		Entity::Reference ref;
 	};
 }
 

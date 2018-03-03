@@ -31,6 +31,22 @@ struct Entity
 	bool collide(const Entity&, float = 0.0f) const;
 
 	float x, y, w, h, rot, xv, yv;
+
+	enum class Type : std::int32_t
+	{
+		PLAYER,
+		ASTEROID,
+		BULLET
+	};
+
+	struct Reference
+	{
+		Reference() = default;
+		Reference(Type t, std::int32_t i) : type(t), id(i) {}
+
+		Type type;
+		std::int32_t id;
+	};
 };
 
 #define PLAYER_WIDTH 20
@@ -43,7 +59,7 @@ struct Player : Entity
 
 	static void step_server(Player&, const Controls&);
 
-	const int id;
+	int id;
 	bool shooting;
 	int health;
 };
@@ -74,6 +90,7 @@ struct GameState
 	GameState() : stepno(0) {}
 
 	void diff_players(const GameState&, std::vector<const Player*>&) const;
+	void diff_removed(const GameState&, std::vector<Entity::Reference>&) const;
 
 	static GameState blank;
 	std::vector<Asteroid> asteroid_list;

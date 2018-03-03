@@ -53,11 +53,18 @@ void Asteroids::recv()
 
 		integrate(*info);
 
-		// pop Player lump
+		// pop Player lumps
 		const lmp::Player *player;
 		while((player = buffer.pop<lmp::Player>()))
 		{
 			integrate(*player);
+		}
+
+		// pop remove lumps
+		const lmp::Remove *removed;
+		while((removed = buffer.pop<lmp::Remove>()))
+		{
+			integrate(*removed);
 		}
 	}
 }
@@ -87,4 +94,26 @@ void Asteroids::integrate(const lmp::Player &lump)
 	// not in the list
 	state.player_list.push_back(lump.id);
 	integrate(lump);
+}
+
+void Asteroids::integrate(const lmp::Remove &lump)
+{
+	switch(lump.ref.type)
+	{
+		case Entity::Type::PLAYER:
+		{
+			// find it in player list
+			for(auto it = state.player_list.begin(); it != state.player_list.end(); ++it)
+			{
+				if((*it).id == lump.ref.id)
+				{
+					state.player_list.erase(it);
+					break;
+				}
+			}
+		}
+
+		default:
+			break;
+	}
 }

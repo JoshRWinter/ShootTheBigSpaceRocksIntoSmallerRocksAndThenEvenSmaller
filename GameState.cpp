@@ -10,8 +10,6 @@
 GameState GameState::blank;
 void GameState::diff_players(const GameState &old, std::vector<const Player*> &delta) const
 {
-	delta.clear();
-
 	// determine what needs to be added or modified
 	for(const Player &player_current : player_list)
 	{
@@ -38,6 +36,27 @@ void GameState::diff_players(const GameState &old, std::vector<const Player*> &d
 
 		if(!found)
 			delta.push_back(&player_current);
+	}
+}
+
+void GameState::diff_removed(const GameState &old, std::vector<Entity::Reference> &removed) const
+{
+	// see what players were removed
+	for(const Player &player_old : old.player_list)
+	{
+		bool found = false;
+
+		for(const Player &player_new : player_list)
+		{
+			if(player_new.id == player_old.id)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if(!found)
+			removed.push_back({Entity::Type::PLAYER, player_old.id});
 	}
 }
 

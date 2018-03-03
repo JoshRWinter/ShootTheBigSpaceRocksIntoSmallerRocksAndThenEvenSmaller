@@ -13,6 +13,9 @@
 #define WINDOW_WIDTH 600
 #define WINDOW_HEIGHT 500
 
+#define CLIENT_TIMEOUT 4
+#define SERVER_TIMEOUT 10
+
 #define hcf(msg) {log(std::string("\033[35;1mFatal Error:\033[0m ") + msg);std::abort();}
 
 class mersenne

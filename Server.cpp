@@ -69,15 +69,34 @@ void Server::accept()
 	if(!accept_client)
 		return;
 
-	Client client;
-	Player player(++Client::last_id);
-	client.id = player.id;
-	client.secret = random(0, 500'000'000);
-	client.stepno = 0;
+	Client client(++Client::last_id, random(0, 500'000'000));
+	Player player(client.id);
 	stream.send_block(&client.secret, sizeof(client.secret));
 
 	client_list.push_back(client);
 	state.player_list.push_back(player);
+}
+
+void Server::kick(const Client &client, const std::string &reason)
+{
+	for(auto it = client_list.begin(); it != client_list.end(); ++it)
+	{
+		if((*it).id == client.id)
+		{
+			log("client " + std::to_string(client.id) + " kicked (" + reason + ")");
+			client_list.erase(it);
+			break;
+		}
+	}
+
+	for(auto it = state.player_list.begin(); it != state.player_list.end(); ++it)
+	{
+		if((*it).id == client.id)
+		{
+			state.player_list.erase(it);
+			break;
+		}
+	}
 }
 
 void Server::send()
@@ -134,14 +153,24 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	buffer.push(info);
 
 	bool info_present = false;
+	const GameState &oldstate = get_hist_state(client.stepno);
 
 	// figure out what players have changed
 	std::vector<const Player*> player_delta;
-	state.diff_players(get_hist_state(client.stepno), player_delta);
+	state.diff_players(oldstate, player_delta);
 	for(const auto subject : player_delta)
 	{
 		info_present = true;
 		buffer.push(lmp::Player(*subject));
+	}
+
+	// figure out what entities have been deleted
+	std::vector<Entity::Reference> removed;
+	state.diff_removed(oldstate, removed);
+	for(const auto subject : removed)
+	{
+		info_present = true;
+		buffer.push(lmp::Remove(subject));
 	}
 
 	if(!info_present)
@@ -157,6 +186,7 @@ void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 	client.controls.fire = lump.fire == 1;
 	client.controls.angle = lump.angle;
 	client.stepno = lump.stepno;
+	client.last_datagram_time = time(NULL);
 }
 
 const GameState &Server::get_hist_state(unsigned stepno) const
@@ -186,6 +216,20 @@ void Server::step()
 		history.pop_front();
 }
 
+void Server::check_timeout()
+{
+	const int now = time(NULL);
+
+	for(const Client &client : client_list)
+	{
+		if(!client.udpid.initialized)
+			continue;
+
+		if(now - client.last_datagram_time > CLIENT_TIMEOUT)
+			kick(client, "ping timeout");
+	}
+}
+
 void Server::loop(Server *s)
 {
 	Server &server = *s;
@@ -199,6 +243,8 @@ void Server::loop(Server *s)
 		server.step(); // one world-simulation step
 
 		server.send(); // send data to clients
+
+		server.check_timeout(); // see who has timed out
 
 		server.wait(); // sleep (or spinlock) until time for next loop
 	}

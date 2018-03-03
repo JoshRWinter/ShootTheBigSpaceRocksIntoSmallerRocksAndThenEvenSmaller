@@ -16,6 +16,7 @@ private:
 	void recv();
 	void integrate(const lmp::ServerInfo&);
 	void integrate(const lmp::Player&);
+	void integrate(const lmp::Remove&);
 
 	GameState state;
 

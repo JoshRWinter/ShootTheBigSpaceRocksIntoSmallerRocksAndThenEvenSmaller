@@ -21,11 +21,13 @@ public:
 private:
 	void wait();
 	void accept();
+	void kick(const Client&, const std::string&);
 	void send();
 	void recv();
 	void compile_datagram(const Client&, lmp::netbuf&);
 	void integrate_client(Client&, const lmp::ClientInfo&);
 	const GameState &get_hist_state(unsigned) const;
+	void check_timeout();
 	void step();
 	static void loop(Server*);
 
@@ -45,6 +47,8 @@ private:
 
 struct Client
 {
+	Client(std::int32_t ident, std::int32_t sec) : stepno(0), id(ident), secret(sec), last_datagram_time(0) {}
+
 	Player &player(std::vector<Player> &list)
 	{
 		for(auto &p : list)
@@ -63,14 +67,15 @@ struct Client
 		return NULL;
 	}
 
-	static int last_id;;
+	static int last_id;
 
 	Controls controls;
 
 	net::udp_id udpid;
-	std::int32_t secret;
-	std::int32_t id;
 	std::uint32_t stepno;
+	std::int32_t id;
+	std::int32_t secret;
+	int last_datagram_time;
 };
 
 #endif // SERVER_H
