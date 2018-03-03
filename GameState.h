@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include <vector>
-#include <queue>
+#include <list>
 
 #include "stbsrisrates.h"
 
@@ -74,10 +74,16 @@ struct GameState
 {
 	GameState() : stepno(0) {}
 
+	const std::vector<int> &diff_players(const GameState&) const;
+
+	static GameState blank;
 	std::vector<Asteroid> asteroid_list;
 	std::vector<Bullet> bullet_list;
 	std::vector<Player> player_list;
 	unsigned stepno;
+
+private:
+	static std::vector<int> diffs;
 };
 
 #endif // GAMESTATE_H

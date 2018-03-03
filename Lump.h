@@ -120,7 +120,8 @@ namespace lmp
 		CLIENT_INFO,
 		SERVER_INFO,
 		PLAYER,
-		ASTEROID
+		ASTEROID,
+		REMOVE
 	};
 
 	struct ClientInfo : Lump
@@ -219,6 +220,28 @@ namespace lmp
 		float xv, yv;
 		std::uint8_t shooting;
 		std::uint8_t health;
+	};
+
+	struct Remove : Lump
+	{
+		Remove() : Lump(Type::REMOVE) {}
+
+		void serialize(netbuf &nbuf)
+		{
+			write(type, nbuf);
+
+			write(remove_type, nbuf);
+			write(id, nbuf);
+		}
+
+		void deserialize(netbuf &nbuf)
+		{
+			read(remove_type, nbuf);
+			read(id, nbuf);
+		}
+
+		Type remove_type;
+		std::int32_t id;
 	};
 }
 

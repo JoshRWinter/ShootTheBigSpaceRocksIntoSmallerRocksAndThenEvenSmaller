@@ -73,6 +73,7 @@ void Server::accept()
 	Player player(++Client::last_id);
 	client.id = player.id;
 	client.secret = random(0, 500'000'000);
+	client.stepno = 0;
 	stream.send_block(&client.secret, sizeof(client.secret));
 
 	client_list.push_back(client);
@@ -88,6 +89,8 @@ void Server::send()
 
 		lmp::netbuf buffer;
 		compile_datagram(client, buffer);
+		if(buffer.size == 0)
+			continue;
 
 		udp.send(buffer.raw.data(), buffer.size, client.udpid);
 	}
@@ -123,28 +126,40 @@ void Server::recv()
 	}
 }
 
-void Server::compile_datagram(const Client&, lmp::netbuf &buffer)
+void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 {
 	// server info
 	lmp::ServerInfo info;
 	info.stepno = state.stepno;
 	buffer.push(info);
 
-	// players
-	for(const Player &p : state.player_list)
+	bool info_present = false;
+
+	// figure out what players have changed
+	const std::vector<int> &diffs = state.diff_players(get_hist_state(client.stepno));
+	for(const int id : diffs)
 	{
-		lmp::Player player;
+		for(const Player &subject : state.player_list)
+		{
+			if(id != subject.id)
+				continue;
 
-		player.id = p.id;
-		player.x = p.x;
-		player.y = p.y;
-		player.xv = p.xv;
-		player.yv = p.yv;
-		player.shooting = p.shooting;
-		player.health = p.health;
+			lmp::Player player;
+			player.id = subject.id;
+			player.x = subject.x;
+			player.y = subject.y;
+			player.xv = subject.xv;
+			player.yv = subject.yv;
+			player.shooting = subject.shooting;
+			player.health = subject.health;
 
-		buffer.push(player);
+			buffer.push(player);
+			info_present = true;
+		}
 	}
+
+	if(!info_present)
+		buffer.reset();
 }
 
 void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
@@ -155,6 +170,20 @@ void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 	client.controls.down = lump.down == 1;
 	client.controls.fire = lump.fire == 1;
 	client.controls.angle = lump.angle;
+	client.stepno = lump.stepno;
+}
+
+const GameState &Server::get_hist_state(unsigned stepno) const
+{
+	for(const GameState &st : history)
+	{
+		if(st.stepno == stepno)
+		{
+			return st;
+		}
+	}
+
+	return GameState::blank;
 }
 
 void Server::step()
@@ -166,9 +195,9 @@ void Server::step()
 		Player::step_server(client.player(state.player_list), client.controls);
 
 	// add this state to the history
-	history.push(state);
+	history.push_back(state);
 	if(history.size() > STATE_HISTORY)
-		history.pop();
+		history.pop_front();
 }
 
 void Server::loop(Server *s)

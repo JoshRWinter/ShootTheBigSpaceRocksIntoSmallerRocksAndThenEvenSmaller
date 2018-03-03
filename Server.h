@@ -24,11 +24,12 @@ private:
 	void recv();
 	void compile_datagram(const Client&, lmp::netbuf&);
 	void integrate_client(Client&, const lmp::ClientInfo&);
+	const GameState &get_hist_state(unsigned) const;
 	void step();
 	static void loop(Server*);
 
 	GameState state;
-	std::queue<GameState> history;
+	std::list<GameState> history;
 	std::vector<Client> client_list;
 
 	mersenne random; // prng
@@ -68,6 +69,7 @@ struct Client
 	net::udp_id udpid;
 	std::int32_t secret;
 	std::int32_t id;
+	std::uint32_t stepno;
 };
 
 #endif // SERVER_H

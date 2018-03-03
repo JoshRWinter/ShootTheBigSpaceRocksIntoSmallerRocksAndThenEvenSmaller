@@ -1,6 +1,55 @@
 #include "GameState.h"
 #include "Server.h"
 
+// *********
+// *********
+// GAME STATE
+// *********
+// *********
+
+std::vector<int> GameState::diffs;
+GameState GameState::blank;
+const std::vector<int> &GameState::diff_players(const GameState &old) const
+{
+	diffs.clear();
+
+	// determine what needs to be added or modified
+	for(const Player &player_current : player_list)
+	{
+		// try to find it in old state
+		bool found = false;
+		for(const Player &player_old : old.player_list)
+		{
+			if(player_current.id != player_old.id)
+				continue;
+
+			found = true;
+			// determine if the object has changed
+			if(
+				player_current.x != player_old.x ||
+				player_current.y != player_old.y ||
+				player_current.shooting != player_old.shooting ||
+				player_current.health != player_old.health
+			)
+			{
+				diffs.push_back(player_current.id);
+				break;
+			}
+		}
+
+		if(!found)
+			diffs.push_back(player_current.id);
+	}
+
+	return diffs;
+}
+
+// *********
+// *********
+// BASE ENTITY
+// *********
+// *********
+
 Entity::Entity(float X, float Y, float W, float H, float ROT, float XV, float YV)
 	: x(X)
 	, y(Y)
