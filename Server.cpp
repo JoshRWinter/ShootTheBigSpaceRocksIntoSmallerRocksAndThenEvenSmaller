@@ -144,14 +144,7 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 			if(id != subject.id)
 				continue;
 
-			lmp::Player player;
-			player.id = subject.id;
-			player.x = subject.x;
-			player.y = subject.y;
-			player.xv = subject.xv;
-			player.yv = subject.yv;
-			player.shooting = subject.shooting;
-			player.health = subject.health;
+			lmp::Player player(subject);
 
 			buffer.push(player);
 			info_present = true;

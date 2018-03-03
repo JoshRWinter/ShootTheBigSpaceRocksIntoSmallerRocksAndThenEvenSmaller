@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "stbsrisrates.h"
+#include "GameState.h"
 
 namespace lmp
 {
@@ -190,6 +191,17 @@ namespace lmp
 	struct Player : Lump
 	{
 		Player() : Lump(Type::PLAYER) {}
+		Player(const ::Player &subject)
+			: Lump(Type::PLAYER)
+		{
+			id = subject.id;
+			x = subject.x;
+			y = subject.y;
+			xv = subject.xv;
+			yv = subject.yv;
+			shooting = subject.shooting;
+			health = subject.health;
+		}
 
 		void serialize(netbuf &nbuf)
 		{
@@ -225,6 +237,11 @@ namespace lmp
 	struct Remove : Lump
 	{
 		Remove() : Lump(Type::REMOVE) {}
+		Remove(Type rt, std::int32_t ident)
+			: Lump(Type::REMOVE)
+			, remove_type(rt)
+			, id(ident)
+		{}
 
 		void serialize(netbuf &nbuf)
 		{
