@@ -7,11 +7,10 @@
 // *********
 // *********
 
-std::vector<int> GameState::diffs;
 GameState GameState::blank;
-const std::vector<int> &GameState::diff_players(const GameState &old) const
+void GameState::diff_players(const GameState &old, std::vector<const Player*> &delta) const
 {
-	diffs.clear();
+	delta.clear();
 
 	// determine what needs to be added or modified
 	for(const Player &player_current : player_list)
@@ -32,16 +31,14 @@ const std::vector<int> &GameState::diff_players(const GameState &old) const
 				player_current.health != player_old.health
 			)
 			{
-				diffs.push_back(player_current.id);
+				delta.push_back(&player_current);
 				break;
 			}
 		}
 
 		if(!found)
-			diffs.push_back(player_current.id);
+			delta.push_back(&player_current);
 	}
-
-	return diffs;
 }
 
 // *********

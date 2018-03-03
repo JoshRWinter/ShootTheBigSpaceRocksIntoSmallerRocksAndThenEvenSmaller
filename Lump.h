@@ -1,5 +1,5 @@
-#ifndef SERIALIZE_H
-#define SERIALIZE_H
+#ifndef LUMP_H
+#define LUMP_H
 
 #include <array>
 #include <exception>
@@ -45,7 +45,7 @@ namespace lmp
 			return buf.size > 0;
 		}
 
-		template <typename T> void push(T &lump)
+		template <typename T> void push(const T &lump)
 		{
 			lump.serialize(*this);
 		}
@@ -81,11 +81,11 @@ namespace lmp
 		const Type type;
 
 		Lump(Type tp) : type(tp) {}
-		virtual void serialize(netbuf&) = 0;
+		virtual void serialize(netbuf&) const = 0;
 		virtual void deserialize(netbuf&) = 0;
 
 	protected:
-		template <typename T> void write(T subject, netbuf &nbuf)
+		template <typename T> void write(T subject, netbuf &nbuf) const
 		{
 			const unsigned len = sizeof(subject);
 			if(nbuf.offset + len > nbuf.raw.size())
@@ -129,7 +129,7 @@ namespace lmp
 	{
 		ClientInfo() : Lump(Type::CLIENT_INFO) {}
 
-		void serialize(netbuf &nbuf)
+		void serialize(netbuf &nbuf) const
 		{
 			std::uint8_t bits = 0;
 			bits |= up << 7;
@@ -173,7 +173,7 @@ namespace lmp
 	{
 		ServerInfo() : Lump(Type::SERVER_INFO) {}
 
-		void serialize(netbuf &nbuf)
+		void serialize(netbuf &nbuf) const
 		{
 			write(type, nbuf);
 
@@ -203,7 +203,7 @@ namespace lmp
 			health = subject.health;
 		}
 
-		void serialize(netbuf &nbuf)
+		void serialize(netbuf &nbuf) const
 		{
 			write(type, nbuf);
 
@@ -243,7 +243,7 @@ namespace lmp
 			, id(ident)
 		{}
 
-		void serialize(netbuf &nbuf)
+		void serialize(netbuf &nbuf) const
 		{
 			write(type, nbuf);
 

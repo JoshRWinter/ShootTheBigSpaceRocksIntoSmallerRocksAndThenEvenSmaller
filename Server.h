@@ -4,6 +4,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <list>
 
 #include "network.h"
 #include "Lump.h"

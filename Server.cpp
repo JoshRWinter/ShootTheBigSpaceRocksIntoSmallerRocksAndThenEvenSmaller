@@ -136,19 +136,12 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	bool info_present = false;
 
 	// figure out what players have changed
-	const std::vector<int> &diffs = state.diff_players(get_hist_state(client.stepno));
-	for(const int id : diffs)
+	std::vector<const Player*> player_delta;
+	state.diff_players(get_hist_state(client.stepno), player_delta);
+	for(const auto subject : player_delta)
 	{
-		for(const Player &subject : state.player_list)
-		{
-			if(id != subject.id)
-				continue;
-
-			lmp::Player player(subject);
-
-			buffer.push(player);
-			info_present = true;
-		}
+		info_present = true;
+		buffer.push(lmp::Player(*subject));
 	}
 
 	if(!info_present)
