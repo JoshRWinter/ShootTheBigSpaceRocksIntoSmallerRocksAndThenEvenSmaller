@@ -1,5 +1,6 @@
 #include <mutex>
 #include <iostream>
+#include <string>
 
 #include "Log.h"
 

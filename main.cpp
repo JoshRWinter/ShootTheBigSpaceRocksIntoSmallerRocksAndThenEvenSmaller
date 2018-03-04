@@ -11,8 +11,8 @@
 static int run(QApplication&);
 
 #ifdef _WIN32
-static const int argc = 0;
-static const char **const argv = NULL;
+static int argc = 0;
+static char **const argv = NULL;
 int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, INT)
 #else
 int main(int argc, char **argv)

@@ -5,6 +5,8 @@
 
 #include <random>
 
+#include <time.h>
+
 #include "Log.h"
 
 #define MAX_PLAYERS 2
@@ -31,7 +33,7 @@ public:
 
 	int operator()(int low, int high)
 	{
-		return std::uniform_int_distribution(low, high)(generator);
+		return std::uniform_int_distribution<int>(low, high)(generator);
 	}
 
 	float operator()(float low, float high)

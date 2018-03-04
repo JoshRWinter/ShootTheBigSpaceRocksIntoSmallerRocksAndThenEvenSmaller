@@ -1,5 +1,6 @@
 *.o
 *.obj
+winqt
 .*.swp
 Makefile.qmake
 stbsrisrates
