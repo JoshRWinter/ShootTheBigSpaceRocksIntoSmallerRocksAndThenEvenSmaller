@@ -22,6 +22,8 @@
 #define WORLD_WIDTH 1000
 #define WORLD_TOP -400
 #define WORLD_HEIGHT 1000
+#define WORLD_RIGHT (WORLD_LEFT + WORLD_WIDTH)
+#define WORLD_BOTTOM (WORLD_TOP + WORLD_HEIGHT)
 
 #define hcf(msg) {log(std::string("\033[35;1mFatal Error:\033[0m ") + msg);std::abort();}
 
@@ -36,29 +38,34 @@ public:
 		return std::uniform_int_distribution<int>(low, high)(generator);
 	}
 
-	float operator()(float low, float high)
+	float operator()(double low, double high)
 	{
-		return std::uniform_real_distribution<float>(low, high)(generator);
+		return std::uniform_real_distribution<double>(low, high)(generator);
 	}
 
 private:
 	std::mt19937 generator;
 };
 
-inline void zerof(float *const subject, float step)
+inline void targetf(float *const subject, float step, float target)
 {
-	if(*subject > 0.0f)
+	if(*subject > target)
 	{
 		*subject -= step;
-		if(*subject < 0.0f)
-			*subject = 0.0f;
+		if(*subject < target)
+			*subject = target;
 	}
-	else if(*subject < 0.0f)
+	else if(*subject < target)
 	{
 		*subject += step;
-		if(*subject > 0.0f)
-			*subject = 0.0f;
+		if(*subject > target)
+			*subject = target;
 	}
+}
+
+inline void zerof(float *const subject, float step)
+{
+	targetf(subject, step, 0.0f);
 }
 
 #endif // STBSRISRATES_H

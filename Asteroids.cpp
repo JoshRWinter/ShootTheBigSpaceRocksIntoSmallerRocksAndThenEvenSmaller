@@ -19,7 +19,10 @@ const GameState &Asteroids::step()
 		player.step_client(state.bullet_list);
 
 	// process boolets
-	Bullet::step_client(state.bullet_list);
+	Bullet::step(false, state.bullet_list, state.asteroid_list, random);
+
+	// process asteroids
+	Asteroid::step(false, state.asteroid_list, state.player_list, random);
 
 	return state;
 }
@@ -72,7 +75,7 @@ void Asteroids::recv()
 
 	while(lmp::netbuf::get(buffer, udp))
 	{
-		// log("doot " + std::to_string(time(NULL)));
+		// log("doot size " + std::to_string(buffer.size) + " : " + std::to_string(time(NULL)));
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
 		if(info == NULL)
@@ -88,6 +91,13 @@ void Asteroids::recv()
 		while((player = buffer.pop<lmp::Player>()))
 		{
 			integrate(*player);
+		}
+
+		// pop asteroid lumps
+		const lmp::Asteroid *asteroid;
+		while((asteroid = buffer.pop<lmp::Asteroid>()))
+		{
+			integrate(*asteroid);
 		}
 
 		// pop remove lumps
@@ -128,6 +138,26 @@ void Asteroids::integrate(const lmp::Player &lump)
 	integrate(lump);
 }
 
+void Asteroids::integrate(const lmp::Asteroid &lump)
+{
+	for(Asteroid &aster : state.asteroid_list)
+	{
+		if(lump.id != aster.id)
+			continue;
+
+		aster.x = lump.x;
+		aster.y = lump.y;
+		aster.xv = lump.xv;
+		aster.yv = lump.yv;
+
+		return;
+	}
+
+	// not in the list
+	state.asteroid_list.push_back({lump.aster_type, random, NULL, lump.id});
+	integrate(lump);
+}
+
 void Asteroids::integrate(const lmp::Remove &lump)
 {
 	switch(lump.ref.type)
@@ -143,9 +173,27 @@ void Asteroids::integrate(const lmp::Remove &lump)
 					break;
 				}
 			}
+
+			break;
+		}
+
+		case Entity::Type::ASTEROID:
+		{
+			// find it in the asteroid list
+			for(auto it = state.asteroid_list.begin(); it != state.asteroid_list.end(); ++it)
+			{
+				if((*it).id == lump.ref.id)
+				{
+					state.asteroid_list.erase(it);
+					break;
+				}
+			}
+
+			break;
 		}
 
 		default:
+			hcf("invalide remove id " + std::to_string(int(lump.ref.type)));
 			break;
 	}
 }

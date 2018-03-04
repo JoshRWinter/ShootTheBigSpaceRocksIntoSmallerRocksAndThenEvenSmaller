@@ -39,6 +39,14 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawRect(x, y, WORLD_WIDTH, WORLD_HEIGHT);
 	}
 
+	// draw asteroids
+	for(const Asteroid &aster : state->asteroid_list)
+	{
+		float x = aster.x, y = aster.y;
+		game.adjust_coords(x, y);
+		painter.drawEllipse(x, y, aster.w, aster.h);
+	}
+
 	// draw players
 	for(const Player &player : state->player_list)
 	{

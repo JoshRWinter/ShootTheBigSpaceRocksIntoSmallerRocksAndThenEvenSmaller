@@ -165,6 +165,15 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 		buffer.push(lmp::Player(*subject));
 	}
 
+	// figure out what asteroids have changed
+	std::vector<const Asteroid*> aster_delta;
+	state.diff_asteroids(oldstate, aster_delta);
+	for(const auto subject : aster_delta)
+	{
+		info_present = true;
+		buffer.push(lmp::Asteroid(*subject));
+	}
+
 	// figure out what entities have been deleted
 	std::vector<Entity::Reference> removed;
 	state.diff_removed(oldstate, removed);
@@ -206,23 +215,6 @@ const GameState &Server::get_hist_state(unsigned stepno) const
 	return GameState::blank;
 }
 
-void Server::step()
-{
-	++state.stepno;
-
-	// process players
-	for(Client &client : client_list)
-		Player::step_server(client.player(state.player_list), client.controls, state.bullet_list);
-
-	// process boooletts
-	Bullet::step_server(state.bullet_list, state.asteroid_list);
-
-	// add this state to the history
-	history.push_back(state);
-	if(history.size() > STATE_HISTORY)
-		history.pop_front();
-}
-
 void Server::check_timeout()
 {
 	const int now = time(NULL);
@@ -235,6 +227,26 @@ void Server::check_timeout()
 		if(now - client.last_datagram_time > CLIENT_TIMEOUT)
 			kick(client, "ping timeout");
 	}
+}
+
+void Server::step()
+{
+	++state.stepno;
+
+	// process players
+	for(Client &client : client_list)
+		Player::step_server(client.player(state.player_list), client.controls, state.bullet_list);
+
+	// process boooletts
+	Bullet::step(true, state.bullet_list, state.asteroid_list, random);
+
+	// process asteroids
+	Asteroid::step(true, state.asteroid_list, state.player_list, random);
+
+	// add this state to the history
+	history.push_back(state);
+	if(history.size() > STATE_HISTORY)
+		history.pop_front();
 }
 
 void Server::loop(Server *s)

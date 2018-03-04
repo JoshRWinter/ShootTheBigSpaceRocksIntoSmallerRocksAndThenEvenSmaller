@@ -13,7 +13,8 @@ enum class AsteroidType : std::uint8_t
 {
 	BIG = 1,
 	MED = 2,
-	SMALL = 3
+	SMALL = 3,
+	NONE = 4
 };
 
 struct Controls
@@ -71,7 +72,10 @@ struct Player : Entity
 
 struct Asteroid : Entity
 {
-	Asteroid(AsteroidType);
+	Asteroid(AsteroidType, mersenne&, const Asteroid*, int = ++last_id);
+
+	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, mersenne&);
+	static AsteroidType next(AsteroidType);
 
 	static int last_id;
 	static int size(AsteroidType);
@@ -87,8 +91,7 @@ struct Bullet : Entity
 {
 	Bullet(int, int, float);
 
-	static void step_server(std::vector<Bullet>&, std::vector<Asteroid>&);
-	static void step_client(std::vector<Bullet>&);
+	static void step(bool, std::vector<Bullet>&, std::vector<Asteroid>&, mersenne&);
 
 	float ttl;
 };
@@ -98,6 +101,7 @@ struct GameState
 	GameState() : stepno(0) {}
 
 	void diff_players(const GameState&, std::vector<const Player*>&) const;
+	void diff_asteroids(const GameState&, std::vector<const Asteroid*>&) const;
 	void diff_removed(const GameState&, std::vector<Entity::Reference>&) const;
 
 	static GameState blank;

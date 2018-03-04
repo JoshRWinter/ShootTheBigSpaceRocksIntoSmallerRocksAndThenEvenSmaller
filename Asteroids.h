@@ -17,9 +17,11 @@ private:
 	void recv();
 	void integrate(const lmp::ServerInfo&);
 	void integrate(const lmp::Player&);
+	void integrate(const lmp::Asteroid&);
 	void integrate(const lmp::Remove&);
 
 	GameState state;
+	mersenne random;
 
 	const std::int32_t udp_secret;
 	net::udp udp;

@@ -241,6 +241,50 @@ namespace lmp
 		std::uint8_t health;
 	};
 
+	struct Asteroid : Lump
+	{
+		Asteroid() : Lump(Type::ASTEROID) {}
+		Asteroid(const ::Asteroid &subject)
+			: Lump(Type::ASTEROID)
+		{
+			aster_type = subject.type;
+			id = subject.id;
+			x = subject.x - subject.xv;
+			y = subject.y - subject.yv;
+			xv = subject.xv;
+			yv = subject.yv;
+		}
+
+		void serialize(netbuf &nbuf) const
+		{
+			write(type, nbuf);
+
+			write(aster_type, nbuf);
+			write(id, nbuf);
+			write(x, nbuf);
+			write(y, nbuf);
+			write(xv, nbuf);
+			write(yv, nbuf);
+		}
+
+		void deserialize(netbuf &nbuf)
+		{
+			read(aster_type, nbuf);
+			read(id, nbuf);
+			read(x, nbuf);
+			read(y, nbuf);
+			read(xv, nbuf);
+			read(yv, nbuf);
+		}
+
+		AsteroidType aster_type;
+		std::int32_t id;
+		std::int16_t x;
+		std::int16_t y;
+		float xv;
+		float yv;
+	};
+
 	struct Remove : Lump
 	{
 		Remove() : Lump(Type::REMOVE), ref(Entity::Type(), 0) {}
