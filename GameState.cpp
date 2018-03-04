@@ -141,6 +141,28 @@ void Player::step_server(Player &player, const Controls &controls, std::vector<B
 	player.x += player.xv;
 	player.y += player.yv;
 
+	// prevent player from leaving world boundaries
+	if(player.x < WORLD_LEFT)
+	{
+		player.x = WORLD_LEFT;
+		player.xv = 0.0f;
+	}
+	else if(player.x + PLAYER_WIDTH > WORLD_LEFT + WORLD_WIDTH)
+	{
+		player.x = WORLD_LEFT + WORLD_WIDTH - PLAYER_WIDTH;
+		player.xv = 0.0f;
+	}
+	if(player.y < WORLD_TOP)
+	{
+		player.y = WORLD_TOP;
+		player.yv = 0.0f;
+	}
+	else if(player.y + PLAYER_HEIGHT > WORLD_TOP + WORLD_HEIGHT)
+	{
+		player.y = WORLD_TOP + WORLD_HEIGHT - PLAYER_HEIGHT;
+		player.yv = 0.0f;
+	}
+
 	player.step_client(bullet_list);
 }
 

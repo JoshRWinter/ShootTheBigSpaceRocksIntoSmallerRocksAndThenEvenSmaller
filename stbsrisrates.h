@@ -16,6 +16,11 @@
 #define CLIENT_TIMEOUT 4
 #define SERVER_TIMEOUT 10
 
+#define WORLD_LEFT -400
+#define WORLD_WIDTH 1000
+#define WORLD_TOP -400
+#define WORLD_HEIGHT 1000
+
 #define hcf(msg) {log(std::string("\033[35;1mFatal Error:\033[0m ") + msg);std::abort();}
 
 class mersenne

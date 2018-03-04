@@ -32,16 +32,27 @@ void Window::paintEvent(QPaintEvent*)
 
 	QPainter painter(this);
 
+	// draw world boundaries
+	{
+		float x = WORLD_LEFT, y = WORLD_TOP;
+		game.adjust_coords(x, y);
+		painter.drawRect(x, y, WORLD_WIDTH, WORLD_HEIGHT);
+	}
+
 	// draw players
 	for(const Player &player : state->player_list)
 	{
-		painter.drawEllipse(player.x, player.y, player.w, player.h);
+		float x = player.x, y = player.y;
+		game.adjust_coords(x, y);
+		painter.drawEllipse(x, y, player.w, player.h);
 	}
 
 	// draw booletts
 	for(const Bullet &bullet : state->bullet_list)
 	{
-		painter.drawEllipse(bullet.x, bullet.y, bullet.w, bullet.h);
+		float x = bullet.x, y = bullet.y;
+		game.adjust_coords(x, y);
+		painter.drawEllipse(x, y, bullet.w, bullet.h);
 	}
 }
 

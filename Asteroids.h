@@ -11,6 +11,7 @@ public:
 	Asteroids(const std::string&, std::int32_t);
 	const GameState &step();
 	void input(const Controls&);
+	void adjust_coords(float&, float&) const;
 
 private:
 	void recv();
@@ -23,6 +24,7 @@ private:
 	const std::int32_t udp_secret;
 	net::udp udp;
 	std::uint32_t last_step;
+	std::uint8_t my_id;
 };
 
 #endif // ASTEROIDS_H

@@ -4,6 +4,7 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	: udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
+	, my_id(0)
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
@@ -43,6 +44,28 @@ void Asteroids::input(const Controls &controls)
 	udp.send(net_buffer.raw.data(), net_buffer.size);
 }
 
+void Asteroids::adjust_coords(float &x, float &y) const
+{
+	// find "me"
+	const Player *me = NULL;
+	for(const Player &p : state.player_list)
+	{
+		if(p.id == my_id)
+		{
+			me = &p;
+			break;
+		}
+	}
+	if(me == NULL)
+		return;
+
+	const float player_center_x = me->x + (PLAYER_WIDTH / 2);
+	const float player_center_y = me->y + (PLAYER_HEIGHT / 2);
+
+	x = (x - player_center_x) + (WINDOW_WIDTH / 2);
+	y = (y - player_center_y) + (WINDOW_HEIGHT / 2);
+}
+
 void Asteroids::recv()
 {
 	lmp::netbuf buffer;
@@ -79,6 +102,7 @@ void Asteroids::recv()
 void Asteroids::integrate(const lmp::ServerInfo &info)
 {
 	last_step = info.stepno;
+	my_id = info.my_id;
 }
 
 void Asteroids::integrate(const lmp::Player &lump)

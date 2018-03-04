@@ -150,6 +150,7 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	// server info
 	lmp::ServerInfo info;
 	info.stepno = state.stepno;
+	info.my_id = client.id;
 	buffer.push(info);
 
 	bool info_present = false;

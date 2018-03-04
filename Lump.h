@@ -178,14 +178,17 @@ namespace lmp
 			write(type, nbuf);
 
 			write(stepno, nbuf);
+			write(my_id, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
 			read(stepno, nbuf);
+			read(my_id, nbuf);
 		}
 
 		std::uint32_t stepno;
+		std::uint8_t my_id;
 	};
 
 	struct Player : Lump
