@@ -164,7 +164,7 @@ namespace lmp
 		}
 
 		int up, down, left, right, fire, pause;
-		std::uint16_t angle;
+		float angle;
 		std::uint32_t stepno;
 		std::int32_t secret;
 	};
@@ -199,6 +199,7 @@ namespace lmp
 			y = subject.y;
 			xv = subject.xv;
 			yv = subject.yv;
+			rot = subject.rot;
 			shooting = subject.shooting;
 			health = subject.health;
 		}
@@ -212,6 +213,7 @@ namespace lmp
 			write(y, nbuf);
 			write(xv, nbuf);
 			write(yv, nbuf);
+			write(rot, nbuf);
 			write(shooting, nbuf);
 			write(health, nbuf);
 		}
@@ -223,6 +225,7 @@ namespace lmp
 			read(y, nbuf);
 			read(xv, nbuf);
 			read(yv, nbuf);
+			read(rot, nbuf);
 			read(shooting, nbuf);
 			read(health, nbuf);
 		};
@@ -230,6 +233,7 @@ namespace lmp
 		std::int8_t id;
 		std::int16_t x, y;
 		float xv, yv;
+		float rot;
 		std::uint8_t shooting;
 		std::uint8_t health;
 	};

@@ -16,6 +16,9 @@ private:
 	void paintEvent(QPaintEvent*);
 	void keyPressEvent(QKeyEvent*);
 	void keyReleaseEvent(QKeyEvent*);
+	void mousePressEvent(QMouseEvent*);
+	void mouseReleaseEvent(QMouseEvent*);
+	void mouseMoveEvent(QMouseEvent*);
 	void process_keys(int, bool);
 
 	Controls controls;

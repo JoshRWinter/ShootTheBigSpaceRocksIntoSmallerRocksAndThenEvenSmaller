@@ -9,11 +9,18 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 		throw std::runtime_error("could not initialize udp socket");
 }
 
-const GameState *Asteroids::step()
+const GameState &Asteroids::step()
 {
 	recv();
 
-	return &state;
+	// process players
+	for(Player &player : state.player_list)
+		player.step_client(state.bullet_list);
+
+	// process boolets
+	Bullet::step_client(state.bullet_list);
+
+	return state;
 }
 
 void Asteroids::input(const Controls &controls)
@@ -42,7 +49,7 @@ void Asteroids::recv()
 
 	while(lmp::netbuf::get(buffer, udp))
 	{
-		log("doot " + std::to_string(time(NULL)));
+		// log("doot " + std::to_string(time(NULL)));
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
 		if(info == NULL)
@@ -85,6 +92,7 @@ void Asteroids::integrate(const lmp::Player &lump)
 		player.y = lump.y;
 		player.xv = lump.xv;
 		player.yv = lump.yv;
+		player.rot = lump.rot;
 		player.shooting = lump.shooting;
 		player.health = lump.health;
 

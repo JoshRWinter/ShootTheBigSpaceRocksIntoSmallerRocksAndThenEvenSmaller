@@ -9,7 +9,7 @@ class Asteroids
 {
 public:
 	Asteroids(const std::string&, std::int32_t);
-	const GameState *step();
+	const GameState &step();
 	void input(const Controls&);
 
 private:

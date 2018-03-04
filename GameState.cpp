@@ -26,7 +26,8 @@ void GameState::diff_players(const GameState &old, std::vector<const Player*> &d
 				player_current.x != player_old.x ||
 				player_current.y != player_old.y ||
 				player_current.shooting != player_old.shooting ||
-				player_current.health != player_old.health
+				player_current.health != player_old.health ||
+				player_current.rot != player_old.rot
 			)
 			{
 				delta.push_back(&player_current);
@@ -96,9 +97,10 @@ Player::Player(int ident)
 	, id(ident)
 	, shooting(false)
 	, health(100)
+	, timer_fire(0)
 {}
 
-void Player::step_server(Player &player, const Controls &controls)
+void Player::step_server(Player &player, const Controls &controls, std::vector<Bullet> &bullet_list)
 {
 	if(controls.left || controls.right)
 	{
@@ -124,6 +126,8 @@ void Player::step_server(Player &player, const Controls &controls)
 		zerof(&player.yv, PLAYER_SPEEDUP);
 	}
 
+	player.rot = controls.angle;
+
 	// clamp
 	if(player.xv > PLAYER_MAX_SPEED)
 		player.xv = PLAYER_MAX_SPEED;
@@ -136,6 +140,20 @@ void Player::step_server(Player &player, const Controls &controls)
 
 	player.x += player.xv;
 	player.y += player.yv;
+
+	player.step_client(bullet_list);
+}
+
+void Player::step_client(std::vector<Bullet> &bullet_list)
+{
+	if(timer_fire > 0)
+		--timer_fire;
+
+	if(shooting && timer_fire == 0)
+	{
+		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot});
+		timer_fire = PLAYER_TIMER_FIRE;
+	}
 }
 
 // *********
@@ -173,9 +191,33 @@ int Asteroid::size(AsteroidType type)
 // *********
 
 Bullet::Bullet(int X, int Y, float ROT)
-	: Entity(X, Y, BULLET_SIZE, BULLET_SIZE, ROT)
+	: Entity(X - (BULLET_SIZE / 2), Y - (BULLET_SIZE / 2), BULLET_SIZE, BULLET_SIZE, ROT)
 	, ttl(200)
 {
 	xv = cosf(rot) * BULLET_SPEED;
 	yv = sinf(rot) * BULLET_SPEED;
+}
+
+void Bullet::step_server(std::vector<Bullet> &bullet_list, std::vector<Asteroid> &)
+{
+	step_client(bullet_list);
+}
+
+void Bullet::step_client(std::vector<Bullet> &bullet_list)
+{
+	for(auto it = bullet_list.begin(); it != bullet_list.end();)
+	{
+		Bullet &bullet = *it;
+
+		bullet.x += bullet.xv;
+		bullet.y += bullet.yv;
+
+		if(--bullet.ttl == 0)
+		{
+			bullet_list.erase(it);
+			continue;
+		}
+
+		++it;
+	}
 }

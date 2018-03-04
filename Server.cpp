@@ -187,6 +187,9 @@ void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 	client.controls.angle = lump.angle;
 	client.stepno = lump.stepno;
 	client.last_datagram_time = time(NULL);
+	Player &player = client.player(state.player_list);
+	player.shooting = client.controls.fire;
+	player.rot = client.controls.angle;
 }
 
 const GameState &Server::get_hist_state(unsigned stepno) const
@@ -208,7 +211,10 @@ void Server::step()
 
 	// process players
 	for(Client &client : client_list)
-		Player::step_server(client.player(state.player_list), client.controls);
+		Player::step_server(client.player(state.player_list), client.controls, state.bullet_list);
+
+	// process boooletts
+	Bullet::step_server(state.bullet_list, state.asteroid_list);
 
 	// add this state to the history
 	history.push_back(state);

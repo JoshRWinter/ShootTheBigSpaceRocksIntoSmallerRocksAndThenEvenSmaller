@@ -7,6 +7,8 @@
 
 #define STATE_HISTORY 256
 
+struct Bullet;
+
 enum class AsteroidType : std::uint8_t
 {
 	BIG = 1,
@@ -53,15 +55,18 @@ struct Entity
 #define PLAYER_HEIGHT 16
 #define PLAYER_SPEEDUP 1
 #define PLAYER_MAX_SPEED 4
+#define PLAYER_TIMER_FIRE 6
 struct Player : Entity
 {
 	Player(int);
 
-	static void step_server(Player&, const Controls&);
+	static void step_server(Player&, const Controls&, std::vector<Bullet>&);
+	void step_client(std::vector<Bullet>&);
 
 	int id;
 	bool shooting;
 	int health;
+	float timer_fire;
 };
 
 struct Asteroid : Entity
@@ -77,10 +82,13 @@ struct Asteroid : Entity
 };
 
 #define BULLET_SIZE 5
-#define BULLET_SPEED 2
+#define BULLET_SPEED 10
 struct Bullet : Entity
 {
 	Bullet(int, int, float);
+
+	static void step_server(std::vector<Bullet>&, std::vector<Asteroid>&);
+	static void step_client(std::vector<Bullet>&);
 
 	float ttl;
 };
