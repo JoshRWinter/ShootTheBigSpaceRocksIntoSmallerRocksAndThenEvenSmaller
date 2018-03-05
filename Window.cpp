@@ -99,6 +99,7 @@ void Window::process_keys(int key, bool press)
 {
 	switch(key)
 	{
+		// ARROW KEYS
 		case Qt::Key_Up:
 			controls.up = press;
 			break;
@@ -110,6 +111,31 @@ void Window::process_keys(int key, bool press)
 			break;
 		case Qt::Key_Left:
 			controls.left = press;
+			break;
+
+		// QWERTY WASD
+		case Qt::Key_W:
+			controls.up = press;
+			break;
+		case Qt::Key_A:
+			controls.left = press;
+			break;
+		case Qt::Key_S:
+			controls.down = press;
+			break;
+		case Qt::Key_D:
+			controls.right = press;
+			break;
+
+		// DVORAK WASD
+		case Qt::Key_Comma:
+			controls.up = press;
+			break;
+		case Qt::Key_O:
+			controls.down = press;
+			break;
+		case Qt::Key_E:
+			controls.right = press;
 			break;
 	}
 }
