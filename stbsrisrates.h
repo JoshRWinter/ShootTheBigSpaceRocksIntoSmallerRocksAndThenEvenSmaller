@@ -43,6 +43,14 @@ public:
 		return std::uniform_real_distribution<double>(low, high)(generator);
 	}
 
+	bool operator()(int onein)
+	{
+		if(onein == 0)
+			return false;
+
+		return this->operator()(0, onein - 1) == 0;
+	}
+
 private:
 	std::mt19937 generator;
 };
