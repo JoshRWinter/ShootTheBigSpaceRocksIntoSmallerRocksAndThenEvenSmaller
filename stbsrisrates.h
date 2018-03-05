@@ -10,6 +10,7 @@
 #include "Log.h"
 
 #define MAX_PLAYERS 2
+#define MAX_ASTEROIDS 36
 #define MAX_DATAGRAM_SIZE 500
 
 #define WINDOW_WIDTH 800

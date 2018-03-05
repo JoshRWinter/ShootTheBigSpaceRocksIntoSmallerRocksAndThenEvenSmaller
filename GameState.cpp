@@ -254,9 +254,24 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 
 void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, mersenne &random, float delta)
 {
-	if(server && asteroid_list.size() == 0 && random(0, 100) == 1)
+	if(server)
 	{
-		asteroid_list.push_back({AsteroidType::BIG, random, NULL});
+		// figure out potential # of asteroids
+		int potential = 0;
+		for(const Asteroid &aster : asteroid_list)
+		{
+			if(aster.type == AsteroidType::BIG)
+				potential += 9;
+			else if(aster.type == AsteroidType::MED)
+				potential += 3;
+			else if(aster.type == AsteroidType::SMALL)
+				potential += 1;
+			else
+				hcf("invalid asteroid type");
+		}
+
+		if(potential <= MAX_ASTEROIDS - 9)
+			asteroid_list.push_back({AsteroidType::BIG, random, NULL});
 	}
 
 	for(Asteroid &aster : asteroid_list)
