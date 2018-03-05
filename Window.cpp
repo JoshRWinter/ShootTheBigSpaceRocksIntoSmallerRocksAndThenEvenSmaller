@@ -8,6 +8,7 @@ Window::Window(const std::string &addr, int secret)
 	, game(addr, secret)
 {
 	resize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	setFixedSize(size());
 	setWindowTitle("Shoot The Big Space Rocks Into Smaller Rocks And Then Even Smaller");
 
 	auto timer = new QTimer(this);
