@@ -126,11 +126,17 @@ Entity::Entity(float X, float Y, float W, float H, float ROT, float XV, float YV
 
 bool Entity::collide(const Entity &subject, float tolerance) const
 {
-	return
-	x + w > subject.x + tolerance &&
-	x < subject.x + subject.w - tolerance &&
-	y + h > subject.y + tolerance &&
-	y < subject.y + subject.h - tolerance;
+	const float center_x = x + (w / 2.0f);
+	const float center_y = y + (h / 2.0f);
+	const float subject_center_x = subject.x + (subject.w / 2.0f);
+	const float subject_center_y = subject.y + (subject.h / 2.0f);
+
+	const float radius = ((w + h) / 2.0f) / 2.0f;
+	const float subject_radius = ((subject.w + subject.h) / 2.0f) / 2.0f;
+
+	const float dist = sqrtf(powf(center_x - subject_center_x, 2) + powf(center_y - subject_center_y, 2));
+
+	return dist < radius + subject_radius - tolerance;
 }
 
 // *********
@@ -234,7 +240,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	: Entity(0, 0, size(t), size(t))
 	, type(t)
 	, id(ident)
-	, health(100)
+	, health(durability(t))
 {
 	rot = random(0.0, 3.1415926 * 2);
 	const float speedmod = random(1.0f, 3.0f);
@@ -336,13 +342,29 @@ int Asteroid::size(AsteroidType type)
 	switch(type)
 	{
 		case AsteroidType::BIG:
-			return 90;
+			return 110;
 		case AsteroidType::MED:
-			return 40;
+			return 77;
 		case AsteroidType::SMALL:
-			return 10;
+			return 48;
 		default:
 			break;
+	}
+
+	hcf("invalid asteroid type");
+}
+
+int Asteroid::durability(AsteroidType type)
+{
+	switch(type)
+	{
+		case AsteroidType::BIG:
+			return 100;
+		case AsteroidType::MED:
+			return 70;
+		case AsteroidType::SMALL:
+			return 40;
+		default: break;
 	}
 
 	hcf("invalid asteroid type");
@@ -377,28 +399,27 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 		{
 			Asteroid &aster = *it2;
 
-			if(bullet.collide(aster, 10))
+			if(bullet.collide(aster))
 			{
 				if(server)
 				{
 					// align asteroid direction with bullet direction
-					targetf(&aster.xv, 1, bullet.xv);
-					targetf(&aster.yv, 1, bullet.yv);
+					targetf(&aster.xv, 1.0 / (aster.w / 30.0f), bullet.xv);
+					targetf(&aster.yv, 1.0 / (aster.h / 30.0f), bullet.yv);
 
-					aster.health -= 4;
+					aster.health -= random(2, 6);
 					// maybe delete the asteroid
 					if(aster.health < 1)
 					{
 						const AsteroidType t = Asteroid::next(aster.type);
-						Asteroid newguy1(t, random, &aster);
-						Asteroid newguy2(t, random, &aster);
-						Asteroid newguy3(t, random, &aster);
+						Asteroid parent = aster;
+
 						it2 = asteroid_list.erase(it2);
+
 						if(t != AsteroidType::NONE)
 						{
-							asteroid_list.push_back(newguy1);
-							asteroid_list.push_back(newguy2);
-							asteroid_list.push_back(newguy3);
+							for(int i = 0; i < 3; ++i)
+								asteroid_list.push_back({t, random, &parent});
 						}
 					}
 				}

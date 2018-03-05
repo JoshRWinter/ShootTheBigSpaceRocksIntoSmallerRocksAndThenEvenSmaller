@@ -78,6 +78,7 @@ struct Asteroid : Entity
 
 	static int last_id;
 	static int size(AsteroidType);
+	static int durability(AsteroidType);
 
 	AsteroidType type;
 	int id;
@@ -85,7 +86,7 @@ struct Asteroid : Entity
 };
 
 #define BULLET_SIZE 5
-#define BULLET_SPEED 10
+#define BULLET_SPEED 20
 struct Bullet : Entity
 {
 	Bullet(int, int, float);
