@@ -5,6 +5,8 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
 	, my_id(0)
+	, time_last_step(std::chrono::high_resolution_clock::now())
+	, delta(1.0f)
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
@@ -12,17 +14,24 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 
 const GameState &Asteroids::step()
 {
+	{ // timing related garbage
+		const std::chrono::duration<long long, std::ratio<1, 1'000'000'000>> diff = std::chrono::high_resolution_clock::now() - time_last_step;
+		const float normal_nano = 16666666.0f;
+		delta = diff.count() / normal_nano;
+		time_last_step = std::chrono::high_resolution_clock::now();
+	}
+
 	recv();
 
 	// process players
 	for(Player &player : state.player_list)
-		player.step_client(state.bullet_list);
+		player.step(false, Controls(), state.bullet_list, delta);
 
 	// process boolets
 	Bullet::step(false, state.bullet_list, state.asteroid_list, random);
 
 	// process asteroids
-	Asteroid::step(false, state.asteroid_list, state.player_list, random);
+	Asteroid::step(false, state.asteroid_list, state.player_list, random, delta);
 
 	return state;
 }

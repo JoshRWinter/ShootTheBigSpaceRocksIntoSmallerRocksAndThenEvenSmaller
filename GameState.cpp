@@ -147,78 +147,76 @@ Player::Player(int ident)
 	, timer_fire(0)
 {}
 
-void Player::step_server(Player &player, const Controls &controls, std::vector<Bullet> &bullet_list)
+void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bullet_list, float delta)
 {
-	if(controls.left || controls.right)
+	if(server)
 	{
-		if(controls.right)
-			player.xv += PLAYER_SPEEDUP;
-		if(controls.left)
-			player.xv -= PLAYER_SPEEDUP;
-	}
-	else
-	{
-		zerof(&player.xv, PLAYER_SPEEDUP);
+		if(controls.left || controls.right)
+		{
+			if(controls.right)
+				xv += PLAYER_SPEEDUP;
+			if(controls.left)
+				xv -= PLAYER_SPEEDUP;
+		}
+		else
+		{
+			zerof(&xv, PLAYER_SPEEDUP);
+		}
+
+		if(controls.up || controls.down)
+		{
+			if(controls.up)
+				yv -= PLAYER_SPEEDUP;
+			if(controls.down)
+				yv += PLAYER_SPEEDUP;
+		}
+		else
+		{
+			zerof(&yv, PLAYER_SPEEDUP);
+		}
+
+		rot = controls.angle;
+
+		// clamp
+		if(xv > PLAYER_MAX_SPEED)
+			xv = PLAYER_MAX_SPEED;
+		else if(xv < -PLAYER_MAX_SPEED)
+			xv = -PLAYER_MAX_SPEED;
+		if(yv > PLAYER_MAX_SPEED)
+			yv = PLAYER_MAX_SPEED;
+		else if(yv < -PLAYER_MAX_SPEED)
+			yv = -PLAYER_MAX_SPEED;
+
+		x += xv * delta;
+		y += yv * delta;
+
+		// prevent player from leaving world boundaries
+		if(x < WORLD_LEFT)
+		{
+			x = WORLD_LEFT;
+			xv = 0.0f;
+		}
+		else if(x + PLAYER_WIDTH > WORLD_LEFT + WORLD_WIDTH)
+		{
+			x = WORLD_LEFT + WORLD_WIDTH - PLAYER_WIDTH;
+			xv = 0.0f;
+		}
+		if(y < WORLD_TOP)
+		{
+			y = WORLD_TOP;
+			yv = 0.0f;
+		}
+		else if(y + PLAYER_HEIGHT > WORLD_TOP + WORLD_HEIGHT)
+		{
+			y = WORLD_TOP + WORLD_HEIGHT - PLAYER_HEIGHT;
+			yv = 0.0f;
+		}
 	}
 
-	if(controls.up || controls.down)
-	{
-		if(controls.up)
-			player.yv -= PLAYER_SPEEDUP;
-		if(controls.down)
-			player.yv += PLAYER_SPEEDUP;
-	}
-	else
-	{
-		zerof(&player.yv, PLAYER_SPEEDUP);
-	}
+	if(timer_fire > 0.0f)
+		timer_fire -= delta;
 
-	player.rot = controls.angle;
-
-	// clamp
-	if(player.xv > PLAYER_MAX_SPEED)
-		player.xv = PLAYER_MAX_SPEED;
-	else if(player.xv < -PLAYER_MAX_SPEED)
-		player.xv = -PLAYER_MAX_SPEED;
-	if(player.yv > PLAYER_MAX_SPEED)
-		player.yv = PLAYER_MAX_SPEED;
-	else if(player.yv < -PLAYER_MAX_SPEED)
-		player.yv = -PLAYER_MAX_SPEED;
-
-	player.x += player.xv;
-	player.y += player.yv;
-
-	// prevent player from leaving world boundaries
-	if(player.x < WORLD_LEFT)
-	{
-		player.x = WORLD_LEFT;
-		player.xv = 0.0f;
-	}
-	else if(player.x + PLAYER_WIDTH > WORLD_LEFT + WORLD_WIDTH)
-	{
-		player.x = WORLD_LEFT + WORLD_WIDTH - PLAYER_WIDTH;
-		player.xv = 0.0f;
-	}
-	if(player.y < WORLD_TOP)
-	{
-		player.y = WORLD_TOP;
-		player.yv = 0.0f;
-	}
-	else if(player.y + PLAYER_HEIGHT > WORLD_TOP + WORLD_HEIGHT)
-	{
-		player.y = WORLD_TOP + WORLD_HEIGHT - PLAYER_HEIGHT;
-		player.yv = 0.0f;
-	}
-
-	player.step_client(bullet_list);
-}
-
-void Player::step_client(std::vector<Bullet> &bullet_list)
-{
-	if(timer_fire > 0)
-		--timer_fire;
-
-	if(shooting && timer_fire == 0)
+	if(shooting && timer_fire <= 0.0f)
 	{
 		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot});
 		timer_fire = PLAYER_TIMER_FIRE;
@@ -254,7 +252,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	yv = sinf(rot) * speedmod;
 }
 
-void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, mersenne &random)
+void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, mersenne &random, float delta)
 {
 	if(server && asteroid_list.size() == 0 && random(0, 100) == 1)
 	{
@@ -273,8 +271,9 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			}
 		}
 
-		aster.x += aster.xv;
-		aster.y += aster.yv;
+		const float mult = server ? 1.0f : delta;
+		aster.x += aster.xv * mult;
+		aster.y += aster.yv * mult;
 
 		if(aster.x < WORLD_LEFT)
 		{
@@ -365,11 +364,12 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 
 			if(bullet.collide(aster, 10))
 			{
-				targetf(&aster.xv, 1, bullet.xv);
-				targetf(&aster.yv, 1, bullet.yv);
-
 				if(server)
 				{
+					// align asteroid direction with bullet direction
+					targetf(&aster.xv, 1, bullet.xv);
+					targetf(&aster.yv, 1, bullet.yv);
+
 					aster.health -= 4;
 					// maybe delete the asteroid
 					if(aster.health < 1)

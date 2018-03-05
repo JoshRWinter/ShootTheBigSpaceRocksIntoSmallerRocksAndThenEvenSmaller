@@ -235,13 +235,13 @@ void Server::step()
 
 	// process players
 	for(Client &client : client_list)
-		Player::step_server(client.player(state.player_list), client.controls, state.bullet_list);
+		client.player(state.player_list).step(true, client.controls, state.bullet_list, 1.0f);
 
 	// process boooletts
 	Bullet::step(true, state.bullet_list, state.asteroid_list, random);
 
 	// process asteroids
-	Asteroid::step(true, state.asteroid_list, state.player_list, random);
+	Asteroid::step(true, state.asteroid_list, state.player_list, random, 244);
 
 	// add this state to the history
 	history.push_back(state);

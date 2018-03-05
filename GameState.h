@@ -61,8 +61,7 @@ struct Player : Entity
 {
 	Player(int);
 
-	static void step_server(Player&, const Controls&, std::vector<Bullet>&);
-	void step_client(std::vector<Bullet>&);
+	void step(bool, const Controls&, std::vector<Bullet>&, float delta);
 
 	int id;
 	bool shooting;
@@ -74,7 +73,7 @@ struct Asteroid : Entity
 {
 	Asteroid(AsteroidType, mersenne&, const Asteroid*, int = ++last_id);
 
-	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, mersenne&);
+	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, mersenne&, float);
 	static AsteroidType next(AsteroidType);
 
 	static int last_id;

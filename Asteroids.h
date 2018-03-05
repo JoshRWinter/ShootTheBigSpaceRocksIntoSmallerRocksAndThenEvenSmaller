@@ -1,6 +1,8 @@
 #ifndef ASTEROIDS_H
 #define ASTEROIDS_H
 
+#include <chrono>
+
 #include "network.h"
 #include "Lump.h"
 #include "GameState.h"
@@ -27,6 +29,8 @@ private:
 	net::udp udp;
 	std::uint32_t last_step;
 	std::uint8_t my_id;
+	std::chrono::time_point<std::chrono::high_resolution_clock> time_last_step;
+	float delta;
 };
 
 #endif // ASTEROIDS_H
