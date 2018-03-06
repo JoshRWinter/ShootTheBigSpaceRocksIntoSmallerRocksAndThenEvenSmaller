@@ -384,7 +384,7 @@ Bullet::Bullet(int X, int Y, float ROT)
 	yv = sinf(rot) * BULLET_SPEED;
 }
 
-void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Asteroid> &asteroid_list, mersenne &random)
+void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Asteroid> &asteroid_list, std::vector<Particle> *particle_list, mersenne &random)
 {
 	for(auto it = bullet_list.begin(); it != bullet_list.end();)
 	{
@@ -423,6 +423,10 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 						}
 					}
 				}
+				else{
+					// generate particles
+					Particle::create(*particle_list, bullet.x, bullet.y, 6, random);
+				}
 
 				// delete the bullet
 				it = bullet_list.erase(it);
@@ -441,6 +445,47 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 			bullet_list.erase(it);
 			continue;
 		}
+
+		++it;
+	}
+}
+
+// *********
+// *********
+// PARTICLES
+// *********
+// *********
+
+Particle::Particle(float x, float y, mersenne &random)
+	: Entity(x, y, 0, 0)
+	, ttl(random(PARTICLE_TTL))
+{
+	rot = random(0.0, 3.1415926 * 2.0);
+	xv = cosf(rot) * random(PARTICLE_SPEED);
+	yv = sinf(rot) * random(PARTICLE_SPEED);
+}
+
+void Particle::create(std::vector<Particle> &particle_list, float x, float y, int count, mersenne &random)
+{
+	for(int i = 0; i < count; ++i)
+		particle_list.push_back({x, y, random});
+}
+
+void Particle::step(std::vector<Particle> &particle_list, float delta)
+{
+	for(auto it = particle_list.begin(); it != particle_list.end();)
+	{
+		Particle &particle = *it;
+
+		particle.ttl -= delta;
+		if(particle.ttl <= 0.0f)
+		{
+			it = particle_list.erase(it);
+			continue;
+		}
+
+		particle.x += particle.xv * delta;
+		particle.y += particle.yv * delta;
 
 		++it;
 	}

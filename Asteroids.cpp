@@ -28,12 +28,20 @@ const GameState &Asteroids::step()
 		player.step(false, Controls(), state.bullet_list, delta);
 
 	// process boolets
-	Bullet::step(false, state.bullet_list, state.asteroid_list, random);
+	Bullet::step(false, state.bullet_list, state.asteroid_list, &particle_list, random);
 
 	// process asteroids
 	Asteroid::step(false, state.asteroid_list, state.player_list, random, delta);
 
+	// process particles
+	Particle::step(particle_list, delta);
+
 	return state;
+}
+
+const std::vector<Particle> &Asteroids::get_particles() const
+{
+	return particle_list;
 }
 
 void Asteroids::input(const Controls &controls)
@@ -193,6 +201,9 @@ void Asteroids::integrate(const lmp::Remove &lump)
 			{
 				if((*it).id == lump.ref.id)
 				{
+					const Asteroid &aster = *it;
+
+					Particle::create(particle_list, aster.x + (aster.w / 2), aster.y + (aster.h / 2), 40, random);
 					state.asteroid_list.erase(it);
 					break;
 				}

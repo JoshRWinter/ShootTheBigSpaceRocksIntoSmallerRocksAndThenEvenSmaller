@@ -85,13 +85,25 @@ struct Asteroid : Entity
 	int health;
 };
 
+struct Particle;
 #define BULLET_SIZE 5
 #define BULLET_SPEED 20
 struct Bullet : Entity
 {
 	Bullet(int, int, float);
 
-	static void step(bool, std::vector<Bullet>&, std::vector<Asteroid>&, mersenne&);
+	static void step(bool, std::vector<Bullet>&, std::vector<Asteroid>&, std::vector<Particle>*, mersenne&);
+
+	float ttl;
+};
+
+#define PARTICLE_SPEED 11.0, 15.0
+#define PARTICLE_TTL 5, 7
+struct Particle : Entity
+{
+	Particle(float, float, mersenne&);
+	static void create(std::vector<Particle> &particle_list, float x, float y, int, mersenne&);
+	static void step(std::vector<Particle>&, float);
 
 	float ttl;
 };

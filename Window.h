@@ -21,9 +21,10 @@ private:
 	void mouseMoveEvent(QMouseEvent*);
 	void process_keys(int, bool);
 
+	Asteroids game;
 	Controls controls;
 	const GameState *state;
-	Asteroids game;
+	const std::vector<Particle> *const particle_list;
 };
 
 #endif // WINDOW_H

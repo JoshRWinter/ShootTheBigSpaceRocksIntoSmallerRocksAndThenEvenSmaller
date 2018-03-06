@@ -4,8 +4,9 @@
 #include "Window.h"
 
 Window::Window(const std::string &addr, int secret)
-	: state(NULL)
-	, game(addr, secret)
+	: game(addr, secret)
+	, state(NULL)
+	, particle_list(&(game.get_particles()))
 {
 	resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setFixedSize(size());
@@ -62,6 +63,18 @@ void Window::paintEvent(QPaintEvent*)
 		float x = bullet.x, y = bullet.y;
 		game.adjust_coords(x, y);
 		painter.drawEllipse(x, y, bullet.w, bullet.h);
+	}
+
+	// draw particles
+	// painter.setPen({Qt::black, 2});
+	for(const Particle &particle : *particle_list)
+	{
+		float x = particle.x, y = particle.y;
+		const float len = 2.5f;
+		float x2 = particle.x - (particle.xv * len), y2 = particle.y - (particle.yv * len);
+		game.adjust_coords(x, y);
+		game.adjust_coords(x2, y2);
+		painter.drawLine(x, y, x2, y2);
 	}
 }
 

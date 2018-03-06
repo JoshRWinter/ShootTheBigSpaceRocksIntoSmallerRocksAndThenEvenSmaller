@@ -238,7 +238,7 @@ void Server::step()
 		client.player(state.player_list).step(true, client.controls, state.bullet_list, 1.0f);
 
 	// process boooletts
-	Bullet::step(true, state.bullet_list, state.asteroid_list, random);
+	Bullet::step(true, state.bullet_list, state.asteroid_list, NULL, random);
 
 	// process asteroids
 	Asteroid::step(true, state.asteroid_list, state.player_list, random, 244);

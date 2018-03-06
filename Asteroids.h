@@ -12,6 +12,7 @@ class Asteroids
 public:
 	Asteroids(const std::string&, std::int32_t);
 	const GameState &step();
+	const std::vector<Particle> &get_particles() const;
 	void input(const Controls&);
 	void adjust_coords(float&, float&) const;
 
@@ -23,6 +24,7 @@ private:
 	void integrate(const lmp::Remove&);
 
 	GameState state;
+	std::vector<Particle> particle_list;
 	mersenne random;
 
 	const std::int32_t udp_secret;
