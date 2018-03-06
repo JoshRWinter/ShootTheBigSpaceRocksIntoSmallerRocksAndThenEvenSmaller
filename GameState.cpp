@@ -248,14 +248,16 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	{
 		x = parent->x + (parent->w / 2) - (w / 2);
 		y = parent->y + (parent->h / 2) - (h / 2);
+		xv = parent->xv + random(-2.5, 2.5);
+		yv = parent->yv + random(-2.5, 2.5);
 	}
 	else
 	{
 		x = random(WORLD_LEFT, WORLD_RIGHT);
 		y = random(WORLD_TOP, WORLD_BOTTOM);
+		xv = cosf(rot) * speedmod;
+		yv = sinf(rot) * speedmod;
 	}
-	xv = cosf(rot) * speedmod;
-	yv = sinf(rot) * speedmod;
 }
 
 void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, mersenne &random, float delta)
