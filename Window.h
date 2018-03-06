@@ -3,8 +3,37 @@
 
 #include <QWidget>
 #include <QKeyEvent>
+#include <QPixmap>
 
 #include "Asteroids.h"
+
+struct Assets
+{
+	Assets()
+		: player("assets/player.png")
+		, asteroid_big("assets/asteroid_big.png")
+		, asteroid_med("assets/asteroid_med.png")
+		, asteroid_small("assets/asteroid_small.png")
+	{}
+
+	QPixmap &asteroid(AsteroidType type)
+	{
+		switch(type)
+		{
+			case AsteroidType::BIG:
+				return asteroid_big;
+			case AsteroidType::MED:
+				return asteroid_med;
+			case AsteroidType::SMALL:
+				return asteroid_small;
+			default: break;
+		}
+
+		hcf("invalid asteroid type");
+	}
+
+	QPixmap player, asteroid_big, asteroid_med, asteroid_small;
+};
 
 class Window : public QWidget
 {
@@ -21,6 +50,7 @@ private:
 	void mouseMoveEvent(QMouseEvent*);
 	void process_keys(int, bool);
 
+	Assets assets;
 	Asteroids game;
 	Controls controls;
 	const GameState *state;

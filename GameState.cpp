@@ -148,6 +148,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	, health(durability(t))
 {
 	rot = random(0.0, 3.1415926 * 2);
+	rotv = random(-0.3, 0.3);
 	const float speedmod = random(1.0f, 3.0f);
 	if(parent != NULL)
 	{
@@ -202,6 +203,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 		const float mult = server ? 1.0f : delta;
 		aster.x += aster.xv * mult;
 		aster.y += aster.yv * mult;
+		aster.rot += aster.rotv * mult;
 
 		if(aster.x < WORLD_LEFT)
 		{

@@ -1,5 +1,6 @@
 #include <QPainter>
 #include <QTimer>
+#include <QTransform>
 
 #include "Window.h"
 
@@ -45,7 +46,10 @@ void Window::paintEvent(QPaintEvent*)
 	{
 		float x = aster.x, y = aster.y;
 		game.adjust_coords(this, x, y);
-		painter.drawEllipse(x, y, aster.w, aster.h);
+		QTransform transform = QTransform().rotate(aster.rot);
+		const QPoint aster_center(x + (aster.w / 2), y + (aster.h / 2));
+		QPixmap rotated = assets.asteroid(aster.type).transformed(transform, Qt::SmoothTransformation);
+		painter.drawPixmap(aster_center.x() - (rotated.width() / 2), aster_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
 	}
 
 	// draw players
@@ -53,7 +57,12 @@ void Window::paintEvent(QPaintEvent*)
 	{
 		float x = player.x, y = player.y;
 		game.adjust_coords(this, x, y);
-		painter.drawEllipse(x, y, player.w, player.h);
+		// painter.drawEllipse(x, y, player.w, player.h);
+		QTransform transform;
+		transform = transform.rotateRadians(player.rot + 3.1415926);
+		const QPoint player_center(x + (PLAYER_WIDTH / 2), y + (PLAYER_HEIGHT / 2));
+		QPixmap rotated = assets.player.transformed(transform, Qt::SmoothTransformation);
+		painter.drawPixmap(player_center.x() - (rotated.width() / 2), player_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
 	}
 
 	// draw booletts

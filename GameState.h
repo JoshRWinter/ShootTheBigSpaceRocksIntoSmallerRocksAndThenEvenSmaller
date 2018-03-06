@@ -52,8 +52,8 @@ struct Entity
 	};
 };
 
-#define PLAYER_WIDTH 20
-#define PLAYER_HEIGHT 16
+#define PLAYER_WIDTH 30
+#define PLAYER_HEIGHT 30
 #define PLAYER_SPEEDUP 1
 #define PLAYER_MAX_SPEED 4
 #define PLAYER_TIMER_FIRE 6
@@ -86,6 +86,7 @@ struct Asteroid : Entity
 	AsteroidType type;
 	int id;
 	int health;
+	float rotv;
 };
 
 struct Particle;
