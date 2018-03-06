@@ -5,3 +5,4 @@ winqt
 Makefile.qmake
 stbsrisrates
 .qmake.stash
+qtver.bat

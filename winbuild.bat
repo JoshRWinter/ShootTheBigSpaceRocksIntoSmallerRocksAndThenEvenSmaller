@@ -1,4 +1,4 @@
-set qtver=5.9.1
+call qtver.bat
 
 rd /s /q winqt
 mkdir winqt
