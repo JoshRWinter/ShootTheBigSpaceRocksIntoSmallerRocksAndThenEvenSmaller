@@ -64,7 +64,7 @@ void Asteroids::input(const Controls &controls)
 	udp.send(net_buffer.raw.data(), net_buffer.size);
 }
 
-void Asteroids::adjust_coords(float &x, float &y) const
+void Asteroids::adjust_coords(const QWidget *window, float &x, float &y) const
 {
 	// find "me"
 	const Player *me = NULL;
@@ -82,8 +82,8 @@ void Asteroids::adjust_coords(float &x, float &y) const
 	const float player_center_x = me->x + (PLAYER_WIDTH / 2);
 	const float player_center_y = me->y + (PLAYER_HEIGHT / 2);
 
-	x = (x - player_center_x) + (WINDOW_WIDTH / 2);
-	y = (y - player_center_y) + (WINDOW_HEIGHT / 2);
+	x = (x - player_center_x) + (window->width() / 2);
+	y = (y - player_center_y) + (window->height() / 2);
 }
 
 void Asteroids::recv()

@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+#include <QWidget>
+
 #include "network.h"
 #include "Lump.h"
 #include "GameState.h"
@@ -14,7 +16,7 @@ public:
 	const GameState &step();
 	const std::vector<Particle> &get_particles() const;
 	void input(const Controls&);
-	void adjust_coords(float&, float&) const;
+	void adjust_coords(const QWidget*, float&, float&) const;
 
 private:
 	void recv();

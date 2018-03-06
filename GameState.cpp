@@ -41,7 +41,7 @@ bool Entity::collide(const Entity &subject, float tolerance) const
 // *********
 
 Player::Player(int ident)
-	: Entity((WINDOW_WIDTH / 2) - (PLAYER_WIDTH / 2), (WINDOW_HEIGHT / 2) - (PLAYER_HEIGHT / 2), PLAYER_WIDTH, PLAYER_HEIGHT)
+	: Entity(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 	, id(ident)
 	, shooting(false)
 	, health(100)
