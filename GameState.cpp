@@ -1,112 +1,7 @@
 #include "GameState.h"
 #include "Server.h"
 
-// *********
-// *********
-// GAME STATE
-// *********
-// *********
-
 GameState GameState::blank;
-void GameState::diff_players(const GameState &old, std::vector<const Player*> &delta) const
-{
-	// determine what needs to be added or modified
-	for(const Player &player_current : player_list)
-	{
-		// try to find it in old state
-		bool found = false;
-		for(const Player &player_old : old.player_list)
-		{
-			if(player_current.id != player_old.id)
-				continue;
-
-			found = true;
-			// determine if the object has changed
-			if(
-				player_current.x != player_old.x ||
-				player_current.y != player_old.y ||
-				player_current.shooting != player_old.shooting ||
-				player_current.health != player_old.health ||
-				player_current.rot != player_old.rot
-			)
-			{
-				delta.push_back(&player_current);
-			}
-			break;
-		}
-
-		if(!found)
-			delta.push_back(&player_current);
-	}
-}
-
-void GameState::diff_asteroids(const GameState &old, std::vector<const Asteroid*> &delta) const
-{
-	// find out what entities are different
-	for(const Asteroid &aster_new : asteroid_list)
-	{
-		// try to find it in the old state
-		bool found = false;
-		for(const Asteroid &aster_old : old.asteroid_list)
-		{
-			if(aster_new.id != aster_old.id)
-				continue;
-
-			found = true;
-			// determine if it has changed
-			if(
-				aster_new.xv != aster_old.xv ||
-				aster_new.yv != aster_old.yv
-			)
-			{
-				delta.push_back(&aster_new);
-			}
-			break;
-		}
-
-		if(!found)
-			delta.push_back(&aster_new);
-	}
-}
-
-void GameState::diff_removed(const GameState &old, std::vector<Entity::Reference> &removed) const
-{
-	// see what players were removed
-	for(const Player &player_old : old.player_list)
-	{
-		bool found = false;
-
-		for(const Player &player_new : player_list)
-		{
-			if(player_new.id == player_old.id)
-			{
-				found = true;
-				break;
-			}
-		}
-
-		if(!found)
-			removed.push_back({Entity::Type::PLAYER, player_old.id});
-	}
-
-	// see what asteroids were removed
-	for(const Asteroid &aster_old : old.asteroid_list)
-	{
-		bool found = false;
-
-		for(const Asteroid &aster_new : asteroid_list)
-		{
-			if(aster_old.id == aster_new.id)
-			{
-				found = true;
-				break;
-			}
-		}
-
-		if(!found)
-			removed.push_back({Entity::Type::ASTEROID, aster_old.id});
-	}
-}
 
 // *********
 // *********
@@ -229,6 +124,16 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 	}
 }
 
+bool Player::diff(const Player &p) const
+{
+	return
+		shooting != p.shooting ||
+		health != p.health ||
+		x != p.x ||
+		y != p.y ||
+		rot != p.rot;
+}
+
 // *********
 // *********
 // Asteroids
@@ -320,6 +225,13 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			aster.yv = -aster.yv;
 		}
 	}
+}
+
+bool Asteroid::diff(const Asteroid &a) const
+{
+	return
+		xv != a.xv ||
+		yv != a.yv;
 }
 
 AsteroidType Asteroid::next(AsteroidType t)

@@ -92,7 +92,7 @@ void Asteroids::recv()
 
 	while(lmp::netbuf::get(buffer, udp))
 	{
-		// log("doot size " + std::to_string(buffer.size) + " : " + std::to_string(time(NULL)));
+		// log("doot size " + std::to_string(buffer.size) + " : " + std::to_string(random(1, 9)));
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
 		if(info == NULL)

@@ -62,6 +62,7 @@ struct Player : Entity
 	Player(int);
 
 	void step(bool, const Controls&, std::vector<Bullet>&, float delta);
+	bool diff(const Player&) const;
 
 	int id;
 	bool shooting;
@@ -72,6 +73,8 @@ struct Player : Entity
 struct Asteroid : Entity
 {
 	Asteroid(AsteroidType, mersenne&, const Asteroid*, int = ++last_id);
+
+	bool diff(const Asteroid&) const;
 
 	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, mersenne&, float);
 	static AsteroidType next(AsteroidType);
@@ -122,5 +125,46 @@ struct GameState
 	std::vector<Player> player_list;
 	unsigned stepno;
 };
+
+template <typename T> void compile_diff(const std::vector<T> &old_list, const std::vector<T> &new_list, std::vector<const Entity*> &delta)
+{
+	for(const T &ent_new : new_list)
+	{
+		bool found = false;
+
+		for(const T &ent_old : old_list)
+		{
+			if(ent_new.id != ent_old.id)
+				continue;
+
+			found = true;
+			if(ent_new.diff(ent_old))
+				delta.push_back(&ent_new);
+		}
+
+		if(!found)
+			delta.push_back(&ent_new);
+	}
+}
+
+template <typename T> void compile_remove_diff(const Entity::Type ent_type, const std::vector<T> &old_list, const std::vector<T> &new_list, std::vector<Entity::Reference> &removed)
+{
+	for(const T &ent_old : old_list)
+	{
+		bool found = false;
+
+		for(const T &ent_new : new_list)
+		{
+			if(ent_old.id == ent_new.id)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if(!found)
+			removed.push_back({ent_type, ent_old.id});
+	}
+}
 
 #endif // GAMESTATE_H

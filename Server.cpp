@@ -155,29 +155,30 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 
 	bool info_present = false;
 	const GameState &oldstate = get_hist_state(client.stepno);
+	std::vector<const Entity*> ent_list;
 
 	// figure out what players have changed
-	std::vector<const Player*> player_delta;
-	state.diff_players(oldstate, player_delta);
-	for(const auto subject : player_delta)
+	compile_diff(oldstate.player_list, state.player_list, ent_list);
+	for(const auto subject : ent_list)
 	{
 		info_present = true;
-		buffer.push(lmp::Player(*subject));
+		buffer.push(lmp::Player(*(Player*)subject));
 	}
 
 	// figure out what asteroids have changed
-	std::vector<const Asteroid*> aster_delta;
-	state.diff_asteroids(oldstate, aster_delta);
-	for(const auto subject : aster_delta)
+	ent_list.clear();
+	compile_diff(oldstate.asteroid_list, state.asteroid_list, ent_list);
+	for(const auto subject : ent_list)
 	{
 		info_present = true;
-		buffer.push(lmp::Asteroid(*subject));
+		buffer.push(lmp::Asteroid(*(Asteroid*)subject));
 	}
 
 	// figure out what entities have been deleted
-	std::vector<Entity::Reference> removed;
-	state.diff_removed(oldstate, removed);
-	for(const auto subject : removed)
+	std::vector<Entity::Reference> remove_list;
+	compile_remove_diff(Entity::Type::PLAYER, oldstate.player_list, state.player_list, remove_list);
+	compile_remove_diff(Entity::Type::ASTEROID, oldstate.asteroid_list, state.asteroid_list, remove_list);
+	for(const auto subject : remove_list)
 	{
 		info_present = true;
 		buffer.push(lmp::Remove(subject));
