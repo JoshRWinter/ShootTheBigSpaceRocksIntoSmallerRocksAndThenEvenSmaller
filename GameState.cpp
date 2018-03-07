@@ -320,8 +320,8 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 				if(server)
 				{
 					// align asteroid direction with bullet direction
-					targetf(&aster.xv, 1.0 / (aster.w / 30.0f), bullet.xv);
-					targetf(&aster.yv, 1.0 / (aster.h / 30.0f), bullet.yv);
+					targetf(&aster.xv, 1.0 / (aster.w / 30.0f), bullet.xv / 2.0);
+					targetf(&aster.yv, 1.0 / (aster.h / 30.0f), bullet.yv / 2.0);
 
 					aster.health -= random(8, 15);
 					// maybe delete the asteroid
