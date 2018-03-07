@@ -148,7 +148,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	, health(durability(t))
 {
 	rot = random(0.0, 3.1415926 * 2);
-	rotv = random(-0.3, 0.3);
+	rotv = random(-0.7, 0.7);
 	const float speedmod = random(1.0f, 3.0f);
 	if(parent != NULL)
 	{
