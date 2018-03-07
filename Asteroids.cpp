@@ -92,6 +92,7 @@ void Asteroids::recv()
 
 	while(lmp::netbuf::get(buffer, udp))
 	{
+		/*
 		{
 			static int bytes, last_second;
 			const int cursec = time(NULL);
@@ -105,6 +106,7 @@ void Asteroids::recv()
 			}
 			bytes += buffer.size;
 		}
+		*/
 
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
