@@ -48,7 +48,7 @@ Player::Player(int ident)
 	, timer_fire(0)
 {}
 
-void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bullet_list, float delta)
+void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bullet_list, float delta, mersenne &random)
 {
 	if(server)
 	{
@@ -119,7 +119,8 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 
 	if(shooting && timer_fire <= 0.0f)
 	{
-		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot});
+		const float plusminus = 0.02f;
+		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot + random(-plusminus, plusminus)});
 		timer_fire = PLAYER_TIMER_FIRE;
 	}
 }
@@ -277,9 +278,9 @@ int Asteroid::durability(AsteroidType type)
 		case AsteroidType::BIG:
 			return 100;
 		case AsteroidType::MED:
-			return 70;
-		case AsteroidType::SMALL:
 			return 40;
+		case AsteroidType::SMALL:
+			return 20;
 		default: break;
 	}
 
@@ -309,6 +310,38 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 		bullet.x += bullet.xv;
 		bullet.y += bullet.yv;
 
+		// check for collision with world boundary
+		bool remove = false;
+		if(bullet.x > WORLD_RIGHT)
+		{
+			remove = true;
+			if(!server)
+				Particle::create(*particle_list, WORLD_RIGHT, bullet.y, 3, random);
+		}
+		else if(bullet.x < WORLD_LEFT)
+		{
+			remove = true;
+			if(!server)
+				Particle::create(*particle_list, WORLD_LEFT, bullet.y, 3, random);
+		}
+		if(bullet.y < WORLD_TOP)
+		{
+			remove = true;
+			if(!server)
+				Particle::create(*particle_list, bullet.x, WORLD_TOP, 3, random);
+		}
+		else if(bullet.y > WORLD_BOTTOM)
+		{
+			remove = true;
+			if(!server)
+				Particle::create(*particle_list, bullet.x, WORLD_BOTTOM, 3, random);
+		}
+		if(remove)
+		{
+			bullet_list.erase(it);
+			continue;
+		}
+
 		// check for collision with asteroids
 		bool stop = false;
 		for(auto it2 = asteroid_list.begin(); it2 != asteroid_list.end();)
@@ -323,7 +356,7 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 					targetf(&aster.xv, 1.0 / (aster.w / 30.0f), bullet.xv / 2.0);
 					targetf(&aster.yv, 1.0 / (aster.h / 30.0f), bullet.yv / 2.0);
 
-					aster.health -= random(8, 15);
+					aster.health -= random(4, 7);
 					// maybe delete the asteroid
 					if(aster.health < 1)
 					{

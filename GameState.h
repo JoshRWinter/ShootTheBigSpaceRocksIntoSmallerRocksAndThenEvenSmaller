@@ -56,12 +56,12 @@ struct Entity
 #define PLAYER_HEIGHT 30
 #define PLAYER_SPEEDUP 1
 #define PLAYER_MAX_SPEED 4
-#define PLAYER_TIMER_FIRE 6
+#define PLAYER_TIMER_FIRE 4
 struct Player : Entity
 {
 	Player(int);
 
-	void step(bool, const Controls&, std::vector<Bullet>&, float delta);
+	void step(bool, const Controls&, std::vector<Bullet>&, float delta, mersenne&);
 	bool diff(const Player&) const;
 
 	int id;

@@ -25,7 +25,7 @@ const GameState &Asteroids::step()
 
 	// process players
 	for(Player &player : state.player_list)
-		player.step(false, Controls(), state.bullet_list, delta);
+		player.step(false, Controls(), state.bullet_list, delta, random);
 
 	// process boolets
 	Bullet::step(false, state.bullet_list, state.asteroid_list, &particle_list, random);
