@@ -34,7 +34,10 @@ void Server::wait()
 	{
 		current = std::chrono::high_resolution_clock::now();
 		diff = current - last;
+#ifndef _WIN32
+		// sorry windows, but your Sleep(...) sucks
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
+#endif
 	}while(diff.count() < 16666000);
 
 	last = current;
