@@ -323,7 +323,7 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 					targetf(&aster.xv, 1.0 / (aster.w / 30.0f), bullet.xv);
 					targetf(&aster.yv, 1.0 / (aster.h / 30.0f), bullet.yv);
 
-					aster.health -= random(5, 9);
+					aster.health -= random(8, 15);
 					// maybe delete the asteroid
 					if(aster.health < 1)
 					{
