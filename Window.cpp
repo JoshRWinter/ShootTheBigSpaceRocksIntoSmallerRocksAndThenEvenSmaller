@@ -88,6 +88,24 @@ void Window::paintEvent(QPaintEvent*)
 		game.adjust_coords(this, x2, y2);
 		painter.drawLine(x, y, x2, y2);
 	}
+
+	// fps
+	{
+		static int fps, last;
+		static char fpsstr[30] = "";
+		const int now = time(NULL);
+
+		if(now != last)
+		{
+			last = now;
+			sprintf(fpsstr, "%d fps", fps > 60 ? 60 : fps);
+			fps = 0;
+		}
+		else
+			++fps;
+
+		painter.drawText(QPointF(10.0, 10.0), fpsstr);
+	}
 }
 
 void Window::keyPressEvent(QKeyEvent *event)
