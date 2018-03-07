@@ -68,9 +68,13 @@ void Window::paintEvent(QPaintEvent*)
 	// draw booletts
 	for(const Bullet &bullet : state->bullet_list)
 	{
-		float x = bullet.x, y = bullet.y;
+		if(bullet.ttl > BULLET_TTL - 3)
+			continue;
+
+		float x = bullet.x + (bullet.w / 2), y = bullet.y + (bullet.h / 2);
 		game.adjust_coords(this, x, y);
-		painter.drawEllipse(x, y, bullet.w, bullet.h);
+		const float mult = 2.0f;
+		painter.drawLine(x, y, x - (bullet.xv * mult), y - (bullet.yv * mult));
 	}
 
 	// draw particles

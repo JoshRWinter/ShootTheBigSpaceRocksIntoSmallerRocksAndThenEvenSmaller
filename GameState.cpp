@@ -294,7 +294,7 @@ int Asteroid::durability(AsteroidType type)
 
 Bullet::Bullet(int X, int Y, float ROT)
 	: Entity(X - (BULLET_SIZE / 2), Y - (BULLET_SIZE / 2), BULLET_SIZE, BULLET_SIZE, ROT)
-	, ttl(200)
+	, ttl(BULLET_TTL)
 {
 	xv = cosf(rot) * BULLET_SPEED;
 	yv = sinf(rot) * BULLET_SPEED;

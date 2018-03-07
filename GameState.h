@@ -92,6 +92,7 @@ struct Asteroid : Entity
 struct Particle;
 #define BULLET_SIZE 5
 #define BULLET_SPEED 20
+#define BULLET_TTL 200
 struct Bullet : Entity
 {
 	Bullet(int, int, float);
