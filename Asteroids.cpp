@@ -287,7 +287,7 @@ void Asteroids::integrate(const lmp::Remove &lump)
 		}
 
 		default:
-			hcf("invalide remove id " + std::to_string(int(lump.ref.type)));
+			hcf("invalide remove id %d", std::to_string(int(lump.ref.type)));
 			break;
 	}
 }

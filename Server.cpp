@@ -50,7 +50,7 @@ void Server::wait()
 		if(current != second)
 		{
 			if(state.stepno > 200 && sps < 56)
-				log("sps == " + std::to_string(sps) + " -- having trouble keeping up");
+				log("sps == %d -- having trouble keeping up", std::to_string(sps));
 			sps = 0;
 			second = current;
 		}
@@ -87,7 +87,7 @@ void Server::kick(const Client &client, const std::string &reason)
 	{
 		if((*it).id == client.id)
 		{
-			log("client " + std::to_string(client.id) + " kicked (" + reason + ")");
+			log("client %d kicked (%s)", std::to_string(client.id), reason.c_str());
 			client_list.erase(it);
 			break;
 		}

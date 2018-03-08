@@ -58,7 +58,7 @@ struct Client
 			if(p.id == id)
 				return p;
 
-		hcf("could not id player " + std::to_string(id));
+		hcf("could not id player %d", std::to_string(id));
 	}
 
 	static Client *by_secret(std::int32_t s, std::vector<Client> &list)

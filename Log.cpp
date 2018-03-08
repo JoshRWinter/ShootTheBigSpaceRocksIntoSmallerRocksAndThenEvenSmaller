@@ -1,12 +1,22 @@
 #include <mutex>
-#include <iostream>
 #include <string>
+
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "Log.h"
 
-void log_stdout(const std::string &line)
+void log_stdout(const char *prefix, const char *fmt, ...)
 {
 	static std::mutex stdout_lock;
 	std::lock_guard<std::mutex> lock(stdout_lock);
-	std::cout << line << std::endl;
+
+	printf("%s", prefix);
+
+	va_list list;
+	va_start(list, fmt);
+	vprintf(fmt, list);
+	va_end(list);
+
+	fflush(stdout);
 }

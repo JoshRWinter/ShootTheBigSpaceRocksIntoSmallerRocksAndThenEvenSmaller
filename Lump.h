@@ -19,7 +19,7 @@ namespace lmp
 		~netbuf()
 		{
 			if(size > 0 && offset != size)
-				hcf("unread lump objects present on the net buffer: offset = " + std::to_string(offset) + ", size = " + std::to_string(size));
+				hcf("unread lump objects present on the net buffer: offset = %d, size = %d", std::to_string(offset), std::to_string(size));
 		}
 
 		netbuf(const netbuf&) = delete;
