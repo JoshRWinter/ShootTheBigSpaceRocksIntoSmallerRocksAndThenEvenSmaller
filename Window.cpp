@@ -56,9 +56,8 @@ void Window::paintEvent(QPaintEvent*)
 	{
 		float x = ship.x, y = ship.y;
 		game.adjust_coords(this, x, y);
-		QTransform transform = QTransform().rotateRadians(ship.xv > 0.0f ? 0 : 3.14159f);
 		const QPoint ship_center(x + (SHIP_WIDTH / 2), y + (SHIP_HEIGHT / 2));
-		QPixmap rotated = assets.ship.transformed(transform);
+		const QPixmap &rotated = assets.ship[Assets::todeg(ship.xv > 0.0f ? 0 : 3.1415926)];
 		painter.drawPixmap(ship_center.x() - (rotated.width() / 2), ship_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
 
 		// draw health
@@ -74,9 +73,8 @@ void Window::paintEvent(QPaintEvent*)
 	{
 		float x = aster.x, y = aster.y;
 		game.adjust_coords(this, x, y);
-		QTransform transform = QTransform().rotateRadians(aster.rot);
 		const QPoint aster_center(x + (aster.w / 2), y + (aster.h / 2));
-		QPixmap rotated = assets.asteroid(aster.type).transformed(transform, Qt::SmoothTransformation);
+		const QPixmap &rotated = assets.asteroid(aster.type, aster.rot);
 		painter.drawPixmap(aster_center.x() - (rotated.width() / 2), aster_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
 	}
 
@@ -86,10 +84,8 @@ void Window::paintEvent(QPaintEvent*)
 		float x = player.x, y = player.y;
 		game.adjust_coords(this, x, y);
 		// painter.drawEllipse(x, y, player.w, player.h);
-		QTransform transform;
-		transform = transform.rotateRadians(player.rot + 3.1415926);
 		const QPoint player_center(x + (PLAYER_WIDTH / 2), y + (PLAYER_HEIGHT / 2));
-		QPixmap rotated = assets.player.transformed(transform, Qt::SmoothTransformation);
+		const QPixmap &rotated = assets.player[Assets::todeg(player.rot + 3.1415926)];
 		painter.drawPixmap(player_center.x() - (rotated.width() / 2), player_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
 	}
 
