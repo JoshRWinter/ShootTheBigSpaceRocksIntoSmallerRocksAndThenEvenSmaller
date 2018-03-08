@@ -58,6 +58,7 @@ struct Entity
 #define PLAYER_SPEEDUP 1
 #define PLAYER_MAX_SPEED 4
 #define PLAYER_TIMER_FIRE 4
+#define PLAYER_TIMER_IDLE 210
 struct Player : Entity
 {
 	Player(int);
@@ -67,8 +68,9 @@ struct Player : Entity
 
 	int id;
 	bool shooting;
-	int health;
+	float health;
 	float timer_fire;
+	float timer_idle;
 };
 
 struct Asteroid : Entity

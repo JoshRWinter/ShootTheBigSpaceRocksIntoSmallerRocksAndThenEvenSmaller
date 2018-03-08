@@ -61,6 +61,7 @@ Player::Player(int ident)
 	, shooting(false)
 	, health(100)
 	, timer_fire(0)
+	, timer_idle(0)
 {}
 
 void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bullet_list, float delta, mersenne &random)
@@ -69,6 +70,8 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 	{
 		if(health > 0 && (controls.left || controls.right))
 		{
+			timer_idle = 0;
+
 			if(controls.right)
 				xv += PLAYER_SPEEDUP;
 			if(controls.left)
@@ -81,6 +84,8 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 
 		if(health > 0 && (controls.up || controls.down))
 		{
+			timer_idle = 0;
+
 			if(controls.up)
 				yv -= PLAYER_SPEEDUP;
 			if(controls.down)
@@ -134,9 +139,19 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 
 	if(shooting && timer_fire <= 0.0f && health > 0)
 	{
+		timer_idle = 0;
 		const float plusminus = 0.02f;
 		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot + random(-plusminus, plusminus)});
 		timer_fire = PLAYER_TIMER_FIRE;
+	}
+
+	++timer_idle;
+
+	if(server && timer_idle > PLAYER_TIMER_IDLE && health < 100)
+	{
+		health += 0.2f;
+		if(health > 100)
+			health = 100;
 	}
 }
 
@@ -212,7 +227,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			for(Player &player : player_list)
 			{
 				if(player.health > 0 && aster.collide(player, 20))
-					player.health -= 1;
+					player.health -= 2;
 			}
 		}
 
