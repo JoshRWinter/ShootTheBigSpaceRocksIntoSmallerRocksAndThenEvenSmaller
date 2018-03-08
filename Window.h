@@ -73,11 +73,18 @@ private:
 
 	static int text_width(const QFontMetrics&, const QString&);
 
+	QFont font_announcement;
+	QFont font_fps;
+	QFont font_health;
+	QFont font_score;
+	QFontMetrics fm_announcement;
+	QFontMetrics fm_fps;
+	QFontMetrics fm_health;
+	QFontMetrics fm_score;
+
 	Assets assets;
 	Asteroids game;
 	Controls controls;
-	const GameState *state;
-	const std::vector<Particle> *const particle_list;
 };
 
 #endif // WINDOW_H

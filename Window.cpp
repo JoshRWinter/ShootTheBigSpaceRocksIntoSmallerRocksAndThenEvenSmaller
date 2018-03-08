@@ -5,9 +5,15 @@
 #include "Window.h"
 
 Window::Window(const std::string &addr, int secret)
-	: game(addr, secret)
-	, state(NULL)
-	, particle_list(&(game.get_particles()))
+	: font_announcement("sans-serif", 20)
+	, font_fps("sans-serif", 10)
+	, font_health("sans-serif", 12)
+	, font_score("sans-serif", 15)
+	, fm_announcement(font_announcement)
+	, fm_fps(font_fps)
+	, fm_health(font_health)
+	, fm_score(font_score)
+	, game(addr, secret)
 {
 	resize(1000, 800);
 	setWindowTitle("Shoot The Big Space Rocks Into Smaller Rocks And Then Even Smaller");
@@ -22,25 +28,14 @@ Window::Window(const std::string &addr, int secret)
 void Window::step()
 {
 	game.input(controls);
-	state = &(game.step());
+	game.step();
 
 	repaint();
 }
 
 void Window::paintEvent(QPaintEvent*)
 {
-	if(state == NULL)
-		return;
-
 	QPainter painter(this);
-
-	// font related schtuff
-	QFont font_announcement = painter.font();
-	QFont font_fps = painter.font();
-	QFont font_health(font_fps);
-	font_announcement.setPointSize(20);
-	font_fps.setPointSize(10);
-	font_health.setPointSize(12);
 
 	// draw world boundaries
 	{
@@ -52,7 +47,7 @@ void Window::paintEvent(QPaintEvent*)
 	// draw ships
 	painter.setFont(font_health);
 	QFontMetrics health_fm(font_health);
-	for(const Ship &ship : state->ship_list)
+	for(const Ship &ship : game.state.ship_list)
 	{
 		float x = ship.x, y = ship.y;
 		game.adjust_coords(this, x, y);
@@ -69,7 +64,7 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw asteroids
-	for(const Asteroid &aster : state->asteroid_list)
+	for(const Asteroid &aster : game.state.asteroid_list)
 	{
 		float x = aster.x, y = aster.y;
 		game.adjust_coords(this, x, y);
@@ -79,7 +74,7 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw players
-	for(const Player &player : state->player_list)
+	for(const Player &player : game.state.player_list)
 	{
 		float x = player.x, y = player.y;
 		game.adjust_coords(this, x, y);
@@ -90,7 +85,7 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw booletts
-	for(const Bullet &bullet : state->bullet_list)
+	for(const Bullet &bullet : game.state.bullet_list)
 	{
 		if(bullet.ttl > BULLET_TTL - 3)
 			continue;
@@ -103,7 +98,7 @@ void Window::paintEvent(QPaintEvent*)
 
 	// draw particles
 	// painter.setPen({Qt::black, 2});
-	for(const Particle &particle : *particle_list)
+	for(const Particle &particle : game.particle_list)
 	{
 		float x = particle.x, y = particle.y;
 		const float len = 2.5f;
@@ -113,7 +108,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawLine(x, y, x2, y2);
 	}
 
-	// draw hud text
+	// draw messages
 	if(!game.announcements.empty())
 	{
 		Announcement &msg = game.announcements.front();
@@ -127,6 +122,28 @@ void Window::paintEvent(QPaintEvent*)
 		msg.timer -= game.delta;
 		if(msg.timer <= 0.0f)
 			game.announcements.pop();
+	}
+
+	// draw hud
+	{
+		const Player *const me = game.me();
+
+		const int bar_width = 350;
+		const int bar_height = 15;
+		const int padding = 3;
+		const int bar_x = (width() / 2) - (bar_width / 2);
+		const int bar_y = height() - 40;
+		const int health = me ? (me->health > 0 ? me->health : 0) : 100;
+
+		QBrush back(Qt::gray);
+		QBrush forground(Qt::black);
+		painter.fillRect(QRect(bar_x, bar_y, bar_width, bar_height), back);
+		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0), bar_height - (padding * 2)), forground);
+
+		char score_str[20];
+		snprintf(score_str, sizeof(score_str), "%u", game.score);
+		painter.setFont(font_score);
+		painter.drawText(bar_x + (bar_width / 2) - (fm_score.width(score_str) / 2), bar_y - 15, score_str);
 	}
 
 	// fps

@@ -5,7 +5,8 @@
 int Client::last_id = 0;
 
 Server::Server()
-	: running(true)
+	: gameover_timer(TIMER_GAMEOVER)
+	, running(true)
 	, tcp(SERVER_PORT)
 	, udp(SERVER_PORT)
 	, last(std::chrono::high_resolution_clock::now())
@@ -150,14 +151,18 @@ void Server::recv()
 
 void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 {
+	bool info_present = false;
+	const GameState &oldstate = get_hist_state(client.stepno);
+
 	// server info
 	lmp::ServerInfo info;
 	info.stepno = state.stepno;
 	info.my_id = client.id;
+	if(oldstate.score != state.score)
+		info_present = true;
+	info.score = state.score;
 	buffer.push(info);
 
-	bool info_present = false;
-	const GameState &oldstate = get_hist_state(client.stepno);
 	std::vector<const Entity*> ent_list;
 
 	// figure out what players have changed
@@ -248,12 +253,31 @@ void Server::step()
 {
 	++state.stepno;
 
+	// see if players are all dead
+	bool gameover = true;
+	for(const Player &p : state.player_list)
+	{
+		if(p.health > 0)
+		{
+			gameover = false;
+			break;
+		}
+	}
+	if(gameover)
+	{
+		if(--gameover_timer == 0)
+		{
+			state.reset();
+			gameover_timer = TIMER_GAMEOVER;
+		}
+	}
+
 	// process players
 	for(Client &client : client_list)
 		client.player(state.player_list).step(true, client.controls, state.bullet_list, 1.0f, random);
 
 	// process boooletts
-	Bullet::step(true, state.bullet_list, state.asteroid_list, NULL, random);
+	Bullet::step(true, state, NULL, random);
 
 	// process asteroids
 	Asteroid::step(true, state.asteroid_list, state.player_list, random, 244);

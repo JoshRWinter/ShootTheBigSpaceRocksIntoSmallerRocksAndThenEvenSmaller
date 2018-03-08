@@ -12,6 +12,8 @@
 
 struct Client;
 
+#define TIMER_GAMEOVER 200
+
 class Server
 {
 public:
@@ -34,6 +36,7 @@ private:
 	GameState state;
 	std::list<GameState> history;
 	std::vector<Client> client_list;
+	int gameover_timer;
 
 	mersenne random; // prng
 	std::atomic<bool> running; // flag to tell server to exit

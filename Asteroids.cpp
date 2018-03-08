@@ -2,17 +2,17 @@
 
 Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	: delta(1.0f)
+	, my_id(0)
 	, udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
-	, my_id(0)
 	, time_last_step(std::chrono::high_resolution_clock::now())
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
 }
 
-const GameState &Asteroids::step()
+void Asteroids::step()
 {
 	{ // timing related garbage
 		const std::chrono::duration<long long, std::ratio<1, 1'000'000'000>> diff = std::chrono::high_resolution_clock::now() - time_last_step;
@@ -28,7 +28,7 @@ const GameState &Asteroids::step()
 		player.step(false, Controls(), state.bullet_list, delta, random);
 
 	// process boolets
-	Bullet::step(false, state.bullet_list, state.asteroid_list, &particle_list, random);
+	Bullet::step(false, state, &particle_list, random);
 
 	// process asteroids
 	Asteroid::step(false, state.asteroid_list, state.player_list, random, delta);
@@ -38,13 +38,6 @@ const GameState &Asteroids::step()
 
 	// process particles
 	Particle::step(particle_list, delta);
-
-	return state;
-}
-
-const std::vector<Particle> &Asteroids::get_particles() const
-{
-	return particle_list;
 }
 
 void Asteroids::input(const Controls &controls)
@@ -87,6 +80,15 @@ void Asteroids::adjust_coords(const QWidget *window, float &x, float &y) const
 
 	x = (x - player_center_x) + (window->width() / 2);
 	y = (y - player_center_y) + (window->height() / 2);
+}
+
+const Player *Asteroids::me() const
+{
+	for(const Player &p : state.player_list)
+		if(p.id == my_id)
+			return &p;
+
+	return NULL;
 }
 
 void Asteroids::recv()
@@ -155,6 +157,7 @@ void Asteroids::integrate(const lmp::ServerInfo &info)
 {
 	last_step = info.stepno;
 	my_id = info.my_id;
+	score = info.score;
 }
 
 void Asteroids::integrate(const lmp::Player &lump)
@@ -273,7 +276,7 @@ void Asteroids::integrate(const lmp::Remove &lump)
 						Particle::create(particle_list, ship.x + (SHIP_WIDTH / 2), ship.y + (SHIP_HEIGHT / 2), 120, random);
 						announcements.push({"The passenger cruiser was destroyed\nand all 1 billion billion passengers were killed!"});
 					}
-					else
+					else if(score != 0)
 						announcements.push({"The passenger cruiser safely made it\nthrough the asteroid field!"});
 					state.ship_list.erase(it);
 					break;

@@ -3,6 +3,21 @@
 
 GameState GameState::blank;
 
+void GameState::reset()
+{
+	for(Player &p : player_list)
+	{
+		p.health = 100;
+		p.x = 0.0f;
+		p.y = 0.0f;
+	}
+
+	asteroid_list.clear();
+	bullet_list.clear();
+	ship_list.clear();
+	score = 0;
+}
+
 // *********
 // *********
 // BASE ENTITY
@@ -196,7 +211,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			// check for collisions with player
 			for(Player &player : player_list)
 			{
-				if(aster.collide(player, 20))
+				if(player.health > 0 && aster.collide(player, 20))
 					player.health -= 1;
 			}
 		}
@@ -287,6 +302,22 @@ int Asteroid::durability(AsteroidType type)
 	hcf("invalid asteroid type");
 }
 
+int Asteroid::score(AsteroidType type)
+{
+	switch(type)
+	{
+		case AsteroidType::BIG:
+			return 5;
+		case AsteroidType::MED:
+			return 3;
+		case AsteroidType::SMALL:
+			return 1;
+		default: break;
+	}
+
+	hcf("invalid asteroid type");
+}
+
 // *********
 // *********
 // BOOLETS
@@ -301,9 +332,9 @@ Bullet::Bullet(int X, int Y, float ROT)
 	yv = sinf(rot) * BULLET_SPEED;
 }
 
-void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Asteroid> &asteroid_list, std::vector<Particle> *particle_list, mersenne &random)
+void Bullet::step(bool server, GameState &state, std::vector<Particle> *particle_list, mersenne &random)
 {
-	for(auto it = bullet_list.begin(); it != bullet_list.end();)
+	for(auto it = state.bullet_list.begin(); it != state.bullet_list.end();)
 	{
 		Bullet &bullet = *it;
 
@@ -338,13 +369,13 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 		}
 		if(remove)
 		{
-			bullet_list.erase(it);
+			state.bullet_list.erase(it);
 			continue;
 		}
 
 		// check for collision with asteroids
 		bool stop = false;
-		for(auto it2 = asteroid_list.begin(); it2 != asteroid_list.end();)
+		for(auto it2 = state.asteroid_list.begin(); it2 != state.asteroid_list.end();)
 		{
 			Asteroid &aster = *it2;
 
@@ -360,15 +391,16 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 					// maybe delete the asteroid
 					if(aster.health < 1)
 					{
+						state.score += Asteroid::score(aster.type);
 						const AsteroidType t = Asteroid::next(aster.type);
 						Asteroid parent = aster;
 
-						it2 = asteroid_list.erase(it2);
+						it2 = state.asteroid_list.erase(it2);
 
 						if(t != AsteroidType::NONE)
 						{
 							for(int i = 0; i < 3; ++i)
-								asteroid_list.push_back({t, random, &parent});
+								state.asteroid_list.push_back({t, random, &parent});
 						}
 					}
 				}
@@ -378,7 +410,7 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 				}
 
 				// delete the bullet
-				it = bullet_list.erase(it);
+				it = state.bullet_list.erase(it);
 				stop = true;
 				break;
 			}
@@ -391,7 +423,7 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 
 		if(--bullet.ttl == 0)
 		{
-			bullet_list.erase(it);
+			state.bullet_list.erase(it);
 			continue;
 		}
 

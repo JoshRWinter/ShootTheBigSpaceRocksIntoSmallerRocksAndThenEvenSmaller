@@ -8,6 +8,7 @@
 #define STATE_HISTORY 256
 
 struct Bullet;
+struct GameState;
 
 enum class AsteroidType : std::uint8_t
 {
@@ -82,6 +83,7 @@ struct Asteroid : Entity
 	static int last_id;
 	static int size(AsteroidType);
 	static int durability(AsteroidType);
+	static int score(AsteroidType);
 
 	AsteroidType type;
 	int id;
@@ -97,7 +99,7 @@ struct Bullet : Entity
 {
 	Bullet(int, int, float);
 
-	static void step(bool, std::vector<Bullet>&, std::vector<Asteroid>&, std::vector<Particle>*, mersenne&);
+	static void step(bool, GameState&, std::vector<Particle>*, mersenne&);
 
 	float ttl;
 };
@@ -131,7 +133,12 @@ struct Particle : Entity
 
 struct GameState
 {
-	GameState() : stepno(0) {}
+	GameState()
+		: stepno(0)
+		, score(0)
+	{}
+
+	void reset();
 
 	static GameState blank;
 	std::vector<Asteroid> asteroid_list;
@@ -139,6 +146,7 @@ struct GameState
 	std::vector<Player> player_list;
 	std::vector<Ship> ship_list;
 	unsigned stepno;
+	unsigned score;
 };
 
 template <typename T> void compile_diff(const std::vector<T> &old_list, const std::vector<T> &new_list, std::vector<const Entity*> &delta)

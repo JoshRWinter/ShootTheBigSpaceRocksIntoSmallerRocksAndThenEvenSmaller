@@ -180,16 +180,19 @@ namespace lmp
 
 			write(stepno, nbuf);
 			write(my_id, nbuf);
+			write(score, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
 			read(stepno, nbuf);
 			read(my_id, nbuf);
+			read(score, nbuf);
 		}
 
 		std::uint32_t stepno;
 		std::uint8_t my_id;
+		std::uint32_t score;
 	};
 
 	struct Player : Lump
@@ -239,7 +242,7 @@ namespace lmp
 		float xv, yv;
 		float rot;
 		std::uint8_t shooting;
-		std::uint8_t health;
+		std::int8_t health;
 	};
 
 	struct Asteroid : Lump
