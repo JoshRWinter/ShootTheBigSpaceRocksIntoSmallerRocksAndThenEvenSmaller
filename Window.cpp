@@ -184,6 +184,10 @@ void Window::paintEvent(QPaintEvent*)
 void Window::keyPressEvent(QKeyEvent *event)
 {
 	process_keys(event->key(), true);
+
+	// check for fullscreen cmd F11
+	if(event->key() == Qt::Key_F11)
+		setWindowState(windowState() ^ Qt::WindowFullScreen);
 }
 
 void Window::keyReleaseEvent(QKeyEvent *event)
