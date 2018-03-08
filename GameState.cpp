@@ -67,7 +67,7 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 {
 	if(server)
 	{
-		if(controls.left || controls.right)
+		if(health > 0 && (controls.left || controls.right))
 		{
 			if(controls.right)
 				xv += PLAYER_SPEEDUP;
@@ -79,7 +79,7 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 			zerof(&xv, PLAYER_SPEEDUP);
 		}
 
-		if(controls.up || controls.down)
+		if(health > 0 && (controls.up || controls.down))
 		{
 			if(controls.up)
 				yv -= PLAYER_SPEEDUP;
@@ -132,7 +132,7 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 	if(timer_fire > 0.0f)
 		timer_fire -= delta;
 
-	if(shooting && timer_fire <= 0.0f)
+	if(shooting && timer_fire <= 0.0f && health > 0)
 	{
 		const float plusminus = 0.02f;
 		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot + random(-plusminus, plusminus)});

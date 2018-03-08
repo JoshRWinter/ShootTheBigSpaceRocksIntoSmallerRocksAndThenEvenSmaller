@@ -124,6 +124,21 @@ void Window::paintEvent(QPaintEvent*)
 			game.announcements.pop();
 	}
 
+	// game over text
+	bool alldead = true;
+	for(const Player &p : game.state.player_list)
+		if(p.health > 0)
+		{
+			alldead = false;
+			break;
+		}
+	if(alldead)
+	{
+		const char *const go_str = "Game Over";
+		painter.setFont(font_announcement);
+		painter.drawText((width() / 2) - (fm_announcement.width(go_str) / 2), (height() / 2) - 100, go_str);
+	}
+
 	// draw hud
 	{
 		const Player *const me = game.me();
