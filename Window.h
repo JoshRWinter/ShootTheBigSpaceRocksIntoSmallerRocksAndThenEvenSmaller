@@ -14,6 +14,7 @@ struct Assets
 		, asteroid_big("assets/asteroid_big.png")
 		, asteroid_med("assets/asteroid_med.png")
 		, asteroid_small("assets/asteroid_small.png")
+		, ship("assets/cruiser.png")
 	{}
 
 	QPixmap &asteroid(AsteroidType type)
@@ -32,7 +33,7 @@ struct Assets
 		hcf("invalid asteroid type");
 	}
 
-	QPixmap player, asteroid_big, asteroid_med, asteroid_small;
+	QPixmap player, asteroid_big, asteroid_med, asteroid_small, ship;
 };
 
 class Window : public QWidget
@@ -49,6 +50,8 @@ private:
 	void mouseReleaseEvent(QMouseEvent*);
 	void mouseMoveEvent(QMouseEvent*);
 	void process_keys(int, bool);
+
+	static int text_width(const QFontMetrics&, const QString&);
 
 	Assets assets;
 	Asteroids game;

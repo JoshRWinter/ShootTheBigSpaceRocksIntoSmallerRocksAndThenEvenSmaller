@@ -2,12 +2,24 @@
 #define ASTEROIDS_H
 
 #include <chrono>
+#include <queue>
 
 #include <QWidget>
 
 #include "network.h"
 #include "Lump.h"
 #include "GameState.h"
+
+struct Announcement
+{
+	Announcement(const std::string &msg)
+		: say(msg)
+		, timer(300)
+	{}
+
+	const std::string say;
+	int timer;
+};
 
 class Asteroids
 {
@@ -18,11 +30,15 @@ public:
 	void input(const Controls&);
 	void adjust_coords(const QWidget*, float&, float&) const;
 
+	std::queue<Announcement> announcements;
+	float delta;
+
 private:
 	void recv();
 	void integrate(const lmp::ServerInfo&);
 	void integrate(const lmp::Player&);
 	void integrate(const lmp::Asteroid&);
+	void integrate(const lmp::Ship&);
 	void integrate(const lmp::Remove&);
 
 	GameState state;
@@ -34,7 +50,6 @@ private:
 	std::uint32_t last_step;
 	std::uint8_t my_id;
 	std::chrono::time_point<std::chrono::high_resolution_clock> time_last_step;
-	float delta;
 };
 
 #endif // ASTEROIDS_H

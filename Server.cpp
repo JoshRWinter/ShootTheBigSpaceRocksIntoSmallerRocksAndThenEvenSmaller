@@ -177,10 +177,21 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 		buffer.push(lmp::Asteroid(*(Asteroid*)subject));
 	}
 
+	// figure out what ships have changed
+	ent_list.clear();
+	compile_diff(oldstate.ship_list, state.ship_list, ent_list);
+	for(const auto subject : ent_list)
+	{
+		info_present = true;
+		buffer.push(lmp::Ship(*(Ship*)subject));
+	}
+
+
 	// figure out what entities have been deleted
 	std::vector<Entity::Reference> remove_list;
 	compile_remove_diff(Entity::Type::PLAYER, oldstate.player_list, state.player_list, remove_list);
 	compile_remove_diff(Entity::Type::ASTEROID, oldstate.asteroid_list, state.asteroid_list, remove_list);
+	compile_remove_diff(Entity::Type::SHIP, oldstate.ship_list, state.ship_list, remove_list);
 	for(const auto subject : remove_list)
 	{
 		info_present = true;
@@ -246,6 +257,9 @@ void Server::step()
 
 	// process asteroids
 	Asteroid::step(true, state.asteroid_list, state.player_list, random, 244);
+
+	// process ships
+	Ship::step(true, state.ship_list, state.asteroid_list, NULL, 1.0f, random);
 
 	// add this state to the history
 	history.push_back(state);

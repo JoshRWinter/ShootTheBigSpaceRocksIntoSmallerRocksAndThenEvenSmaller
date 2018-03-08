@@ -34,6 +34,14 @@ void Window::paintEvent(QPaintEvent*)
 
 	QPainter painter(this);
 
+	// font related schtuff
+	QFont font_announcement = painter.font();
+	QFont font_fps = painter.font();
+	QFont font_health(font_fps);
+	font_announcement.setPointSize(20);
+	font_fps.setPointSize(10);
+	font_health.setPointSize(12);
+
 	// draw world boundaries
 	{
 		float x = WORLD_LEFT, y = WORLD_TOP;
@@ -41,12 +49,32 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawRect(x, y, WORLD_WIDTH, WORLD_HEIGHT);
 	}
 
+	// draw ships
+	painter.setFont(font_health);
+	QFontMetrics health_fm(font_health);
+	for(const Ship &ship : state->ship_list)
+	{
+		float x = ship.x, y = ship.y;
+		game.adjust_coords(this, x, y);
+		QTransform transform = QTransform().rotateRadians(ship.xv > 0.0f ? 0 : 3.14159f);
+		const QPoint ship_center(x + (SHIP_WIDTH / 2), y + (SHIP_HEIGHT / 2));
+		QPixmap rotated = assets.ship.transformed(transform);
+		painter.drawPixmap(ship_center.x() - (rotated.width() / 2), ship_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
+
+		// draw health
+		char health_str[10];
+		snprintf(health_str, sizeof(health_str), "%d%%", ship.health < 0 ? 0 : ship.health);
+		const int f_width = health_fm.width(health_str);
+		const int f_height = health_fm.height();
+		painter.drawText(x + (SHIP_WIDTH / 2) - (f_width / 2), y + (SHIP_HEIGHT / 2) - (f_height / 2), f_width, f_height, 0, health_str);
+	}
+
 	// draw asteroids
 	for(const Asteroid &aster : state->asteroid_list)
 	{
 		float x = aster.x, y = aster.y;
 		game.adjust_coords(this, x, y);
-		QTransform transform = QTransform().rotate(aster.rot);
+		QTransform transform = QTransform().rotateRadians(aster.rot);
 		const QPoint aster_center(x + (aster.w / 2), y + (aster.h / 2));
 		QPixmap rotated = assets.asteroid(aster.type).transformed(transform, Qt::SmoothTransformation);
 		painter.drawPixmap(aster_center.x() - (rotated.width() / 2), aster_center.y() - (rotated.height() / 2), rotated.width(), rotated.height(), rotated);
@@ -89,6 +117,22 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawLine(x, y, x2, y2);
 	}
 
+	// draw hud text
+	if(!game.announcements.empty())
+	{
+		Announcement &msg = game.announcements.front();
+
+		QFontMetrics fm(font_announcement);
+		painter.setFont(font_announcement);
+		const int w = text_width(fm, msg.say.c_str());
+		const int x = (width() / 2) - (w / 2);
+		painter.drawText(x, 100, w, 90, Qt::AlignCenter, msg.say.c_str());
+
+		msg.timer -= game.delta;
+		if(msg.timer <= 0.0f)
+			game.announcements.pop();
+	}
+
 	// fps
 	{
 		static int fps, last;
@@ -104,6 +148,7 @@ void Window::paintEvent(QPaintEvent*)
 		else
 			++fps;
 
+		painter.setFont(font_fps);
 		painter.drawText(QPointF(10.0, 10.0), fpsstr);
 	}
 }
@@ -182,4 +227,18 @@ void Window::process_keys(int key, bool press)
 			controls.right = press;
 			break;
 	}
+}
+
+int Window::text_width(const QFontMetrics &fm, const QString &text)
+{
+	int maxwidth = 0.0f;
+	QStringList list = text.split("\n");
+	for(const QString &entry : list)
+	{
+		const int width = fm.width(entry);
+		if(width > maxwidth)
+			maxwidth = width;
+	}
+
+	return maxwidth;
 }

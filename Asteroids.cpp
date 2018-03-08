@@ -1,12 +1,12 @@
 #include "Asteroids.h"
 
 Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
-	: udp_secret(sec)
+	: delta(1.0f)
+	, udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
 	, my_id(0)
 	, time_last_step(std::chrono::high_resolution_clock::now())
-	, delta(1.0f)
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
@@ -32,6 +32,9 @@ const GameState &Asteroids::step()
 
 	// process asteroids
 	Asteroid::step(false, state.asteroid_list, state.player_list, random, delta);
+
+	// process ships
+	Ship::step(false, state.ship_list, state.asteroid_list, &particle_list, delta, random);
 
 	// process particles
 	Particle::step(particle_list, delta);
@@ -132,6 +135,13 @@ void Asteroids::recv()
 			integrate(*asteroid);
 		}
 
+		// pop ship lumps
+		const lmp::Ship *ship;
+		while((ship = buffer.pop<lmp::Ship>()))
+		{
+			integrate(*ship);
+		}
+
 		// pop remove lumps
 		const lmp::Remove *removed;
 		while((removed = buffer.pop<lmp::Remove>()))
@@ -190,6 +200,28 @@ void Asteroids::integrate(const lmp::Asteroid &lump)
 	integrate(lump);
 }
 
+void Asteroids::integrate(const lmp::Ship &lump)
+{
+	// find it in the list
+	for(Ship &ship : state.ship_list)
+	{
+		if(ship.id != lump.id)
+			continue;
+
+		ship.x = lump.x;
+		ship.y = lump.y;
+		ship.xv = lump.xv;
+		ship.yv = lump.yv;
+		ship.health = lump.health;
+
+		return;
+	}
+
+	state.ship_list.push_back({random, lump.id});
+	integrate(lump);
+	announcements.push({"Protect the passenger cruiser!"});
+}
+
 void Asteroids::integrate(const lmp::Remove &lump)
 {
 	switch(lump.ref.type)
@@ -220,6 +252,30 @@ void Asteroids::integrate(const lmp::Remove &lump)
 
 					Particle::create(particle_list, aster.x + (aster.w / 2), aster.y + (aster.h / 2), 40, random);
 					state.asteroid_list.erase(it);
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case Entity::Type::SHIP:
+		{
+			// find it in the ship list
+			for(auto it = state.ship_list.begin(); it != state.ship_list.end(); ++it)
+			{
+				if((*it).id == lump.ref.id)
+				{
+					const Ship &ship = *it;
+
+					if((*it).health < 1)
+					{
+						Particle::create(particle_list, ship.x + (SHIP_WIDTH / 2), ship.y + (SHIP_HEIGHT / 2), 120, random);
+						announcements.push({"The passenger cruiser was destroyed\nand all 1 billion billion passengers were killed!"});
+					}
+					else
+						announcements.push({"The passenger cruiser safely made it\nthrough the asteroid field!"});
+					state.ship_list.erase(it);
 					break;
 				}
 			}

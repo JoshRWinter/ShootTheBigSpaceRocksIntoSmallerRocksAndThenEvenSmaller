@@ -39,7 +39,7 @@ struct Entity
 	{
 		PLAYER,
 		ASTEROID,
-		BULLET
+		SHIP
 	};
 
 	struct Reference
@@ -102,6 +102,22 @@ struct Bullet : Entity
 	float ttl;
 };
 
+#define SHIP_WIDTH 80
+#define SHIP_HEIGHT 69
+#define SHIP_SPEED 1
+struct Ship : Entity
+{
+	Ship(mersenne&, int = ++last_id);
+
+	static void step(bool step, std::vector<Ship>&, const std::vector<Asteroid>&, std::vector<Particle>*, float, mersenne&);
+	bool diff(const Ship&) const;
+	static int last_id;
+
+	int id;
+	int health;
+	float ttl;
+};
+
 #define PARTICLE_SPEED 11.0, 15.0
 #define PARTICLE_TTL 5, 7
 struct Particle : Entity
@@ -117,14 +133,11 @@ struct GameState
 {
 	GameState() : stepno(0) {}
 
-	void diff_players(const GameState&, std::vector<const Player*>&) const;
-	void diff_asteroids(const GameState&, std::vector<const Asteroid*>&) const;
-	void diff_removed(const GameState&, std::vector<Entity::Reference>&) const;
-
 	static GameState blank;
 	std::vector<Asteroid> asteroid_list;
 	std::vector<Bullet> bullet_list;
 	std::vector<Player> player_list;
+	std::vector<Ship> ship_list;
 	unsigned stepno;
 };
 

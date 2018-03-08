@@ -122,6 +122,7 @@ namespace lmp
 		SERVER_INFO,
 		PLAYER,
 		ASTEROID,
+		SHIP,
 		REMOVE
 	};
 
@@ -283,6 +284,50 @@ namespace lmp
 		std::int16_t y;
 		float xv;
 		float yv;
+	};
+
+	struct Ship : Lump
+	{
+		Ship() : Lump(Type::SHIP) {}
+		Ship(const ::Ship &subject)
+			: Lump(Type::SHIP)
+		{
+			id = subject.id;
+			x = subject.x;
+			y = subject.y;
+			xv = subject.xv;
+			yv = subject.yv;
+			health = subject.health;
+		}
+
+		void serialize(netbuf &nbuf) const
+		{
+			write(type, nbuf);
+
+			write(id, nbuf);
+			write(x, nbuf);
+			write(y, nbuf);
+			write(xv, nbuf);
+			write(yv, nbuf);
+			write(health, nbuf);
+		}
+
+		void deserialize(netbuf &nbuf)
+		{
+			read(id, nbuf);
+			read(x, nbuf);
+			read(y, nbuf);
+			read(xv, nbuf);
+			read(yv, nbuf);
+			read(health, nbuf);
+		}
+
+		std::int32_t id;
+		std::int16_t x;
+		std::int16_t y;
+		float xv;
+		float yv;
+		std::int8_t health;
 	};
 
 	struct Remove : Lump

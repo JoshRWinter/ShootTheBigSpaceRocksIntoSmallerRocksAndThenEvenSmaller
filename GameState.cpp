@@ -149,7 +149,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	, health(durability(t))
 {
 	rot = random(0.0, 3.1415926 * 2);
-	rotv = random(-0.7, 0.7);
+	rotv = random(-0.03, 0.03);
 	const float speedmod = random(1.0f, 3.0f);
 	if(parent != NULL)
 	{
@@ -397,6 +397,97 @@ void Bullet::step(bool server, std::vector<Bullet> &bullet_list, std::vector<Ast
 
 		++it;
 	}
+}
+
+// *********
+// *********
+// SHIPS
+// *********
+// *********
+int Ship::last_id = 0;
+Ship::Ship(mersenne &random, int ID)
+	: Entity(0, 0, SHIP_WIDTH, SHIP_HEIGHT)
+	, id(ID)
+	, health(100)
+	, ttl(100)
+{
+	const bool going_left = random(2);
+	y = random(WORLD_TOP, WORLD_BOTTOM - SHIP_HEIGHT);
+
+	if(going_left)
+	{
+		x = WORLD_RIGHT + 1000;
+		xv = -SHIP_SPEED;
+	}
+	else
+	{
+		x = WORLD_LEFT - 1000;
+		xv = SHIP_SPEED;
+	}
+}
+
+void Ship::step(bool server, std::vector<Ship> &ship_list, const std::vector<Asteroid> &asteroid_list, std::vector<Particle> *particle_list, float delta, mersenne &random)
+{
+	if(server && random(800) && ship_list.size() == 0)
+		ship_list.push_back({random});
+
+	for(auto it = ship_list.begin(); it != ship_list.end();)
+	{
+		Ship &ship = *it;
+
+		float xv = ship.xv;
+		if(ship.x < WORLD_LEFT - (SHIP_WIDTH * 2) || ship.x > WORLD_RIGHT + SHIP_WIDTH)
+			xv *= 5;
+
+		if(ship.health > 0)
+			ship.x += xv * delta;
+
+		if(ship.health < 1 && ship.ttl <= 0.0f && server)
+		{
+			it = ship_list.erase(it);
+			continue;
+		}
+		else if(ship.health < 1)
+			ship.ttl -= delta;
+
+		// check for collisions with asteroid
+		if(ship.health > 0)
+		{
+			for(const Asteroid &aster : asteroid_list)
+			{
+				if(aster.collide(ship))
+				{
+					if(server)
+						ship.health -= 2;
+					else
+						Particle::create(*particle_list, ship.x + (SHIP_WIDTH / 2), ship.y + (SHIP_HEIGHT / 2), 30, random);
+				}
+			}
+		}
+
+		if(server)
+		{
+			if(ship.xv > 0.0f && ship.x > WORLD_RIGHT + 1000)
+			{
+				it = ship_list.erase(it);
+				continue;
+			}
+			else if(ship.xv < 0.0f && ship.x < WORLD_LEFT - 1000)
+			{
+				it = ship_list.erase(it);
+				continue;
+			}
+		}
+
+		++it;
+	}
+}
+
+bool Ship::diff(const Ship &other) const
+{
+	return
+		health != other.health ||
+		xv != other.xv;
 }
 
 // *********
