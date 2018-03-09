@@ -32,6 +32,8 @@ namespace dlg
 		const std::string addr;
 		const int start_time;
 	};
+
+	void HelpBox(QWidget* = NULL);
 }
 
 #endif // DIALOG_H
