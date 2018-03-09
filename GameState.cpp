@@ -230,7 +230,7 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	}
 }
 
-void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, mersenne &random, float delta)
+void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, std::vector<Particle> *particle_list, mersenne &random, float delta)
 {
 	if(server)
 	{
@@ -254,16 +254,18 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 
 	for(Asteroid &aster : asteroid_list)
 	{
-		if(server)
+		// check for collisions with player
+		for(Player &player : player_list)
 		{
-			// check for collisions with player
-			for(Player &player : player_list)
+			if(player.health > 0 && aster.collide(player, 10))
 			{
-				if(player.health > 0 && aster.collide(player, 20))
+				if(server)
 				{
 					player.health -= 2;
 					player.timer_idle = 0;
 				}
+				else
+					Particle::create(*particle_list, player.x + (PLAYER_WIDTH / 2), player.y + (PLAYER_HEIGHT / 2), 10, random);
 			}
 		}
 

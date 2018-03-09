@@ -305,7 +305,7 @@ void Server::step()
 	Bullet::step(true, state, NULL, random);
 
 	// process asteroids
-	Asteroid::step(true, state.asteroid_list, state.player_list, random, 244);
+	Asteroid::step(true, state.asteroid_list, state.player_list, NULL, random, 244);
 
 	// process ships
 	Ship::step(true, state.ship_list, state.asteroid_list, NULL, 1.0f, random);

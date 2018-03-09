@@ -9,6 +9,7 @@
 
 struct Bullet;
 struct GameState;
+struct Particle;
 
 enum class AsteroidType : std::uint8_t
 {
@@ -81,7 +82,7 @@ struct Asteroid : Entity
 
 	bool diff(const Asteroid&) const;
 
-	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, mersenne&, float);
+	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, std::vector<Particle>*, mersenne&, float);
 	static AsteroidType next(AsteroidType);
 
 	static int last_id;
@@ -95,7 +96,6 @@ struct Asteroid : Entity
 	float rotv;
 };
 
-struct Particle;
 #define BULLET_SIZE 5
 #define BULLET_SPEED 20
 #define BULLET_TTL 200
