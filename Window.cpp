@@ -135,8 +135,12 @@ void Window::paintEvent(QPaintEvent*)
 	if(alldead)
 	{
 		const char *const go_str = "Game Over";
+		char final_score_str[30];
+		snprintf(final_score_str, sizeof(final_score_str), "Final Score: %d", game.score);
 		painter.setFont(font_announcement);
 		painter.drawText((width() / 2) - (fm_announcement.width(go_str) / 2), (height() / 2) - 100, go_str);
+		painter.setFont(font_score);
+		painter.drawText((width() / 2) - (fm_score.width(final_score_str) / 2), (height() / 2) - 100 + fm_announcement.height() + 10, final_score_str);
 	}
 
 	// draw hud
