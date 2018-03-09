@@ -150,10 +150,8 @@ void Window::paintEvent(QPaintEvent*)
 		const int bar_y = height() - 40;
 		const int health = me ? (me->health > 0 ? me->health : 0) : 100;
 
-		QBrush back(Qt::gray);
-		QBrush forground(Qt::black);
-		painter.fillRect(QRect(bar_x, bar_y, bar_width, bar_height), back);
-		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0), bar_height - (padding * 2)), forground);
+		painter.drawRect(bar_x, bar_y, bar_width, bar_height);
+		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0) + (health > 0 ? 1 : 0), bar_height - (padding * 2) + 1), QBrush(Qt::black));
 
 		char score_str[20];
 		snprintf(score_str, sizeof(score_str), "%u", game.score);
