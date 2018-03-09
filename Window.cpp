@@ -161,6 +161,28 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawText(bar_x + (bar_width / 2) - (fm_score.width(score_str) / 2), bar_y - 15, score_str);
 	}
 
+	// draw repair progress bar
+	if(game.repair != 0)
+	{
+		const Player *const me = game.me();
+		const int bar_width = 350;
+		const int bar_height = 32;
+		const int padding = 3;
+		const int bar_x = (width() / 2) - (bar_width / 2);
+		const int bar_y = (height() / 2) - 50;
+		const int my_health = me ? me->health : 100;
+		const int repair = game.repair;
+
+		painter.drawRect(bar_x, bar_y, bar_width, bar_height);
+		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2) + 1) * (repair / 100.0), bar_height - (padding * 2) + 1), QBrush(Qt::black));
+
+		const char *const text = my_health > 0 ? "Repairing" : "Being Repaired";
+		const int textwidth = fm_score.width(text);
+		const int textheight = fm_score.height();
+		painter.setPen(QPen(QColor(100, 100, 100)));
+		painter.drawText(bar_x + (bar_width / 2) - (textwidth / 2), bar_y + (bar_height / 2) - (textheight / 2), textwidth, textheight, Qt::AlignCenter, text);
+	}
+
 	// fps
 	{
 		static int fps, last;

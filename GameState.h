@@ -63,7 +63,7 @@ struct Player : Entity
 {
 	Player(int);
 
-	void step(bool, const Controls&, std::vector<Bullet>&, float delta, mersenne&);
+	void step(bool, const Controls&, GameState&, float delta, mersenne&);
 	bool diff(const Player&) const;
 
 	int id;
@@ -71,6 +71,8 @@ struct Player : Entity
 	float health;
 	float timer_fire;
 	float timer_idle;
+	float percent_repair;
+	int repairing_id;
 };
 
 struct Asteroid : Entity

@@ -52,7 +52,7 @@ struct Client
 {
 	Client(std::int32_t ident, std::int32_t sec) : stepno(0), id(ident), secret(sec), last_datagram_time(0) {}
 
-	Player &player(std::vector<Player> &list)
+	Player &player(std::vector<Player> &list) const
 	{
 		for(auto &p : list)
 			if(p.id == id)

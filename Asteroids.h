@@ -37,6 +37,7 @@ public:
 	std::vector<Particle> particle_list;
 	std::uint8_t my_id;
 	unsigned score;
+	unsigned repair;
 
 private:
 	mersenne random;

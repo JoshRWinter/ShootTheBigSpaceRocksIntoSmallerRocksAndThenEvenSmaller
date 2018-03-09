@@ -180,6 +180,7 @@ namespace lmp
 
 			write(stepno, nbuf);
 			write(my_id, nbuf);
+			write(repair, nbuf);
 			write(score, nbuf);
 		}
 
@@ -187,11 +188,13 @@ namespace lmp
 		{
 			read(stepno, nbuf);
 			read(my_id, nbuf);
+			read(repair, nbuf);
 			read(score, nbuf);
 		}
 
 		std::uint32_t stepno;
 		std::uint8_t my_id;
+		std::uint8_t repair;
 		std::uint32_t score;
 	};
 

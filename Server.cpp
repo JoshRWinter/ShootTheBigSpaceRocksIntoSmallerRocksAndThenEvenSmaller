@@ -151,6 +151,25 @@ void Server::recv()
 
 void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 {
+	const Player &current = client.player(state.player_list);
+	int repair_percentage = current.percent_repair;
+	// see if this guy is repairing anything
+	if(repair_percentage == 0)
+	{
+		// see if this guy is being repaired
+		for(const Player &p : state.player_list)
+		{
+			if(&current == &p)
+				continue;
+
+			if(p.repairing_id == current.id)
+			{
+				repair_percentage = p.percent_repair;
+				break;
+			}
+		}
+	}
+
 	bool info_present = false;
 	const GameState &oldstate = get_hist_state(client.stepno);
 
@@ -159,6 +178,9 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	info.stepno = state.stepno;
 	info.my_id = client.id;
 	if(oldstate.score != state.score)
+		info_present = true;
+	info.repair = repair_percentage;
+	if(repair_percentage != 0)
 		info_present = true;
 	info.score = state.score;
 	buffer.push(info);
@@ -274,7 +296,7 @@ void Server::step()
 
 	// process players
 	for(Client &client : client_list)
-		client.player(state.player_list).step(true, client.controls, state.bullet_list, 1.0f, random);
+		client.player(state.player_list).step(true, client.controls, state, 1.0f, random);
 
 	// process boooletts
 	Bullet::step(true, state, NULL, random);

@@ -62,9 +62,11 @@ Player::Player(int ident)
 	, health(100)
 	, timer_fire(0)
 	, timer_idle(0)
+	, percent_repair(0)
+	, repairing_id(-1)
 {}
 
-void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bullet_list, float delta, mersenne &random)
+void Player::step(bool server, const Controls &controls, GameState &state, float delta, mersenne &random)
 {
 	if(server)
 	{
@@ -134,6 +136,38 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 		}
 	}
 
+	bool colliding = false;
+	if(server && health > 0)
+	{
+		// check for players hovering over other players
+		for(Player &other : state.player_list)
+		{
+			if(this == &other || other.health > 0)
+				continue;
+
+			if(collide(other) && (repairing_id == -1 || repairing_id == other.id))
+			{
+				colliding = true;
+
+				shooting = false;
+				repairing_id = other.id;
+				percent_repair += 0.25f;
+				if(percent_repair >= 100)
+				{
+					colliding = false;
+					other.health = 100;
+				}
+			}
+
+			break;
+		}
+	}
+	if(!colliding)
+	{
+		percent_repair = 0;
+		repairing_id = -1;
+	}
+
 	if(timer_fire > 0.0f)
 		timer_fire -= delta;
 
@@ -141,13 +175,12 @@ void Player::step(bool server, const Controls &controls, std::vector<Bullet> &bu
 	{
 		timer_idle = 0;
 		const float plusminus = 0.02f;
-		bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot + random(-plusminus, plusminus)});
+		state.bullet_list.push_back({int(x + (PLAYER_WIDTH / 2)), int(y + (PLAYER_HEIGHT / 2)), rot + random(-plusminus, plusminus)});
 		timer_fire = PLAYER_TIMER_FIRE;
 	}
 
 	++timer_idle;
-
-	if(server && timer_idle > PLAYER_TIMER_IDLE && health < 100)
+	if(server && timer_idle > PLAYER_TIMER_IDLE && health < 100 && health > 0)
 	{
 		health += 0.2f;
 		if(health > 100)
@@ -227,7 +260,10 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			for(Player &player : player_list)
 			{
 				if(player.health > 0 && aster.collide(player, 20))
+				{
 					player.health -= 2;
+					player.timer_idle = 0;
+				}
 			}
 		}
 

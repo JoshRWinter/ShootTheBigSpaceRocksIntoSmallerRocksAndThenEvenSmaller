@@ -25,7 +25,7 @@ void Asteroids::step()
 
 	// process players
 	for(Player &player : state.player_list)
-		player.step(false, Controls(), state.bullet_list, delta, random);
+		player.step(false, Controls(), state, delta, random);
 
 	// process boolets
 	Bullet::step(false, state, &particle_list, random);
@@ -158,6 +158,7 @@ void Asteroids::integrate(const lmp::ServerInfo &info)
 	last_step = info.stepno;
 	my_id = info.my_id;
 	score = info.score;
+	repair = info.repair;
 }
 
 void Asteroids::integrate(const lmp::Player &lump)
