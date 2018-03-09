@@ -252,8 +252,12 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			asteroid_list.push_back({AsteroidType::BIG, random, NULL});
 	}
 
-	for(Asteroid &aster : asteroid_list)
+	std::vector<Asteroid> intermediate;
+
+	for(auto it = asteroid_list.begin(); it != asteroid_list.end();)
 	{
+		Asteroid &aster = *it;
+
 		// check for collisions with player
 		for(Player &player : player_list)
 		{
@@ -294,6 +298,47 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 		{
 			aster.y = WORLD_BOTTOM - aster.h;
 			aster.yv = -aster.yv;
+		}
+
+		// sometimes asteroids explode
+		int probability = 0;
+		if(aster.type == AsteroidType::BIG)
+			probability = 1800;
+		else if(aster.type == AsteroidType::MED)
+			probability = 2200;
+		else
+			probability = 1600;
+		if(random(probability) && server)
+		{
+			const AsteroidType newtype = Asteroid::next(aster.type);
+			if(newtype != AsteroidType::NONE)
+			{
+				for(int i = 0; i < 3; ++i)
+				{
+					intermediate.push_back(Asteroid(newtype, random, &aster));
+				}
+			}
+
+			it = asteroid_list.erase(it);
+			continue;
+		}
+
+		++it;
+	}
+
+	if(server)
+	{
+		// add the intermediate asteroids
+		for(Asteroid &aster : intermediate)
+		{
+			// augment its speed
+			const float angle = random(0.0, 2 * 3.1415926);
+			const int explode_speed = random(1.0, 3.0);
+
+			aster.xv = cosf(angle) * explode_speed;
+			aster.yv = sinf(angle) * explode_speed;
+
+			asteroid_list.push_back(aster);
 		}
 	}
 }
