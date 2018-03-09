@@ -10,6 +10,8 @@
 #include "Lump.h"
 #include "GameState.h"
 
+// #define NETWORK_METRICS
+
 struct Announcement
 {
 	Announcement(const std::string &msg)

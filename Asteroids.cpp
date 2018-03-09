@@ -3,11 +3,12 @@
 Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	: delta(1.0f)
 	, my_id(0)
+	, score(0)
+	, repair(0)
 	, udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
 	, time_last_step(std::chrono::high_resolution_clock::now())
-	, repair(0)
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
@@ -98,21 +99,19 @@ void Asteroids::recv()
 
 	while(lmp::netbuf::get(buffer, udp))
 	{
-		/*
+#ifdef NETWORK_METRICS
 		{
 			static int bytes, last_second;
 			const int cursec = time(NULL);
 			if(cursec != last_second)
 			{
-				char str[30] = "";
-				sprintf(str, "%.3f kilobytes/sec", bytes / 1000.0);
-				log(str);
+				log("%.3f kilobytes/sec", bytes / 1000.0);
 				last_second = cursec;
 				bytes = 0;
 			}
 			bytes += buffer.size;
 		}
-		*/
+#endif // NETWORK_METRICS
 
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();

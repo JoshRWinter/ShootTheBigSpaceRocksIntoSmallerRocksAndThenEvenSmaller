@@ -18,5 +18,6 @@ void log_stdout(const char *prefix, const char *fmt, ...)
 	vprintf(fmt, list);
 	va_end(list);
 
+	puts("");
 	fflush(stdout);
 }
