@@ -154,7 +154,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0) + (health > 0 ? 1 : 0), bar_height - (padding * 2) + 1), QBrush(Qt::black));
 
 		char score_str[20];
-		snprintf(score_str, sizeof(score_str), "%u", game.score);
+		snprintf(score_str, sizeof(score_str), "%d", game.score);
 		painter.setFont(font_score);
 		painter.drawText(bar_x + (bar_width / 2) - (fm_score.width(score_str) / 2), bar_y - 15, score_str);
 	}

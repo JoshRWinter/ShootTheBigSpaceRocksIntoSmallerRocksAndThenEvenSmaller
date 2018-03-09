@@ -195,7 +195,7 @@ namespace lmp
 		std::uint32_t stepno;
 		std::uint8_t my_id;
 		std::uint8_t repair;
-		std::uint32_t score;
+		std::int32_t score;
 	};
 
 	struct Player : Lump

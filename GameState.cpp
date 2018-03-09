@@ -360,9 +360,9 @@ int Asteroid::score(AsteroidType type)
 	switch(type)
 	{
 		case AsteroidType::BIG:
-			return 5;
-		case AsteroidType::MED:
 			return 3;
+		case AsteroidType::MED:
+			return 2;
 		case AsteroidType::SMALL:
 			return 1;
 		default: break;
@@ -511,12 +511,12 @@ Ship::Ship(mersenne &random, int ID)
 	}
 }
 
-void Ship::step(bool server, std::vector<Ship> &ship_list, const std::vector<Asteroid> &asteroid_list, std::vector<Particle> *particle_list, float delta, mersenne &random)
+void Ship::step(bool server, GameState &state, std::vector<Particle> *particle_list, float delta, mersenne &random)
 {
-	if(server && random(800) && ship_list.size() == 0)
-		ship_list.push_back({random});
+	if(server && random(800) && state.ship_list.size() == 0)
+		state.ship_list.push_back({random});
 
-	for(auto it = ship_list.begin(); it != ship_list.end();)
+	for(auto it = state.ship_list.begin(); it != state.ship_list.end();)
 	{
 		Ship &ship = *it;
 
@@ -529,7 +529,9 @@ void Ship::step(bool server, std::vector<Ship> &ship_list, const std::vector<Ast
 
 		if(ship.health < 1 && ship.ttl <= 0.0f && server)
 		{
-			it = ship_list.erase(it);
+			it = state.ship_list.erase(it);
+			// remove some score
+			state.score -= 50;
 			continue;
 		}
 		else if(ship.health < 1)
@@ -538,7 +540,7 @@ void Ship::step(bool server, std::vector<Ship> &ship_list, const std::vector<Ast
 		// check for collisions with asteroid
 		if(ship.health > 0)
 		{
-			for(const Asteroid &aster : asteroid_list)
+			for(const Asteroid &aster : state.asteroid_list)
 			{
 				if(aster.collide(ship))
 				{
@@ -552,14 +554,21 @@ void Ship::step(bool server, std::vector<Ship> &ship_list, const std::vector<Ast
 
 		if(server)
 		{
-			if(ship.xv > 0.0f && ship.x > WORLD_RIGHT + 1000)
+			if((ship.xv > 0.0f && ship.x > WORLD_RIGHT + 1000) || (ship.xv < 0.0f && ship.x < WORLD_LEFT - 1000))
 			{
-				it = ship_list.erase(it);
-				continue;
-			}
-			else if(ship.xv < 0.0f && ship.x < WORLD_LEFT - 1000)
-			{
-				it = ship_list.erase(it);
+				// give all players a bit of health
+				for(Player &player : state.player_list)
+				{
+					player.health += ship.health;
+					if(player.health > 100)
+						player.health = 100;
+				}
+
+				// up the score
+				state.score += 50;
+
+				state.ship_list.erase(it);
+
 				continue;
 			}
 		}

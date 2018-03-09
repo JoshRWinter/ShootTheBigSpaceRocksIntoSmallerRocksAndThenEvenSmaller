@@ -38,7 +38,7 @@ public:
 	GameState state;
 	std::vector<Particle> particle_list;
 	std::uint8_t my_id;
-	unsigned score;
+	int score;
 	unsigned repair;
 
 private:

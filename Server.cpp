@@ -308,7 +308,7 @@ void Server::step()
 	Asteroid::step(true, state.asteroid_list, state.player_list, NULL, random, 244);
 
 	// process ships
-	Ship::step(true, state.ship_list, state.asteroid_list, NULL, 1.0f, random);
+	Ship::step(true, state, NULL, 1.0f, random);
 
 	// add this state to the history
 	history.push_back(state);

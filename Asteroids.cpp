@@ -36,7 +36,7 @@ void Asteroids::step()
 	Asteroid::step(false, state.asteroid_list, state.player_list, &particle_list, random, delta);
 
 	// process ships
-	Ship::step(false, state.ship_list, state.asteroid_list, &particle_list, delta, random);
+	Ship::step(false, state, &particle_list, delta, random);
 
 	// process particles
 	Particle::step(particle_list, delta);

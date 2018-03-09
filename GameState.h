@@ -115,7 +115,7 @@ struct Ship : Entity
 {
 	Ship(mersenne&, int = ++last_id);
 
-	static void step(bool step, std::vector<Ship>&, const std::vector<Asteroid>&, std::vector<Particle>*, float, mersenne&);
+	static void step(bool step, GameState&, std::vector<Particle>*, float, mersenne&);
 	bool diff(const Ship&) const;
 	static int last_id;
 
@@ -150,7 +150,7 @@ struct GameState
 	std::vector<Player> player_list;
 	std::vector<Ship> ship_list;
 	unsigned stepno;
-	unsigned score;
+	int score;
 };
 
 template <typename T> void compile_diff(const std::vector<T> &old_list, const std::vector<T> &new_list, std::vector<const Entity*> &delta)
