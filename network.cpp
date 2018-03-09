@@ -573,7 +573,8 @@ int net::udp_server::recv(void *buffer,int len,udp_id &id){
 	// no partial receives
 	int result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&id.storage,&id.len);
 	if(result==-1){
-		if(get_errno() == net::WOULDBLOCK)
+		const auto eno = get_errno();
+		if(eno == net::WOULDBLOCK || eno == net::CONNRESET)
 			return 0;
 		else
 			this->close();
@@ -725,7 +726,7 @@ void net::udp::send(const void *buffer,unsigned len){
 
 int net::udp::recv(void *buffer,unsigned len){
 	if(sock==-1)
-		return -1;
+		return 0;
 
 	// ignored
 	sockaddr_storage src_addr;
@@ -734,7 +735,8 @@ int net::udp::recv(void *buffer,unsigned len){
 	// no such thing as a partial send for udp with sendto
 	const ssize_t result=recvfrom(sock,(char*)buffer,len,0,(sockaddr*)&src_addr,&src_len);
 	if(result==-1){
-		if(get_errno() == net::WOULDBLOCK)
+		const auto eno = get_errno();
+		if(eno == net::WOULDBLOCK || eno == net::CONNRESET)
 			return 0;
 		else
 			this->close();

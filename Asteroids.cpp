@@ -7,6 +7,7 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
 	, time_last_step(std::chrono::high_resolution_clock::now())
+	, repair(0)
 {
 	if(!udp)
 		throw std::runtime_error("could not initialize udp socket");
@@ -288,7 +289,7 @@ void Asteroids::integrate(const lmp::Remove &lump)
 		}
 
 		default:
-			hcf("invalide remove id %d", std::to_string(int(lump.ref.type)));
+			hcf("invalide remove id %d", lump.ref.type);
 			break;
 	}
 }

@@ -19,8 +19,10 @@ namespace net{
 
 #ifdef _WIN32
 	const int WOULDBLOCK = WSAEWOULDBLOCK;
+	const int CONNRESET = WSAECONNRESET;
 #else
 	const int WOULDBLOCK = EWOULDBLOCK;
+	const int CONNRESET = ECONNRESET;
 #endif // _WIN32
 
 // tcp

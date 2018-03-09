@@ -50,7 +50,7 @@ void Server::wait()
 		if(current != second)
 		{
 			if(state.stepno > 200 && sps < 56)
-				log("sps == %d -- having trouble keeping up", std::to_string(sps));
+				log("sps == %d -- having trouble keeping up", sps);
 			sps = 0;
 			second = current;
 		}
@@ -83,21 +83,21 @@ void Server::accept()
 
 void Server::kick(const Client &client, const std::string &reason)
 {
-	for(auto it = client_list.begin(); it != client_list.end(); ++it)
-	{
-		if((*it).id == client.id)
-		{
-			log("client %d kicked (%s)", std::to_string(client.id), reason.c_str());
-			client_list.erase(it);
-			break;
-		}
-	}
-
 	for(auto it = state.player_list.begin(); it != state.player_list.end(); ++it)
 	{
 		if((*it).id == client.id)
 		{
 			state.player_list.erase(it);
+			break;
+		}
+	}
+
+	for(auto it = client_list.begin(); it != client_list.end(); ++it)
+	{
+		if((*it).id == client.id)
+		{
+			log("client %d kicked (%s)", client.id, reason.c_str());
+			client_list.erase(it);
 			break;
 		}
 	}
@@ -267,7 +267,10 @@ void Server::check_timeout()
 			continue;
 
 		if(now - client.last_datagram_time > CLIENT_TIMEOUT)
+		{
 			kick(client, "ping timeout");
+			return;
+		}
 	}
 }
 
