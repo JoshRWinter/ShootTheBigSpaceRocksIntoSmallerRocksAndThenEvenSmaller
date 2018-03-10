@@ -605,6 +605,9 @@ void Ship::step(bool server, GameState &state, std::vector<Particle> *particle_l
 				// give all players a bit of health
 				for(Player &player : state.player_list)
 				{
+					if(player.health < 1)
+						continue;
+
 					player.health += ship.health;
 					if(player.health > 100)
 						player.health = 100;
