@@ -602,17 +602,6 @@ void Ship::step(bool server, GameState &state, std::vector<Particle> *particle_l
 		{
 			if((ship.xv > 0.0f && ship.x > WORLD_RIGHT + 1000) || (ship.xv < 0.0f && ship.x < WORLD_LEFT - 1000))
 			{
-				// give all players a bit of health
-				for(Player &player : state.player_list)
-				{
-					if(player.health < 1)
-						continue;
-
-					player.health += ship.health;
-					if(player.health > 100)
-						player.health = 100;
-				}
-
 				// up the score
 				state.score += 50;
 
