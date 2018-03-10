@@ -135,6 +135,59 @@ struct Particle : Entity
 	float ttl;
 };
 
+#define FIREWORK_SIZE 5
+#define FIREWORK_TTL 60, 90
+#define FIREWORK_SPEED 1.5, 2.4
+#define FIREWORK_COUNT 13, 20
+struct Firework : Entity
+{
+	struct Color
+	{
+		Color(mersenne &random)
+		{
+			const int c = random(0, 5);
+
+			switch(c)
+			{
+				case 0:
+					r = 240; g = b = 0; // red
+					break;
+				case 1:
+					r = b = 0; g = 240; // green
+					break;
+				case 2:
+					r = g = 0; b = 240; // blue
+					break;
+				case 3:
+					r = g = 240; b = 0; // yellow
+					break;
+				case 4:
+					r = b = 240; g = 0; // violet
+					break;
+				case 5:
+					r = 0; g = b = 240; // cyan
+					break;
+			}
+		}
+
+		Color(const Color &rhs)
+		{
+			r = rhs.r;
+			g = rhs.g;
+			b = rhs.b;
+		}
+
+		int r, g, b;
+	};
+
+	Firework(float, float, const Color&, mersenne&);
+	static void create(std::vector<Firework>&, float x, float y, mersenne&);
+	static void step(std::vector<Firework>&, float);
+
+	Color color;
+	float ttl;
+};
+
 struct GameState
 {
 	GameState()

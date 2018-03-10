@@ -13,6 +13,7 @@
 struct Client;
 
 #define TIMER_GAMEOVER 400
+#define TIMER_WIN 600
 
 class Server
 {
@@ -33,10 +34,12 @@ private:
 	void step();
 	static void loop(Server*);
 
+	const int max_score;
+
 	GameState state;
 	std::list<GameState> history;
 	std::vector<Client> client_list;
-	int gameover_timer;
+	int gameover_timer, win_timer;
 	bool paused;
 
 	mersenne random; // prng

@@ -257,7 +257,23 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 		}
 
 		if(potential <= MAX_ASTEROIDS - 9)
-			asteroid_list.push_back({AsteroidType::BIG, random, NULL});
+		{
+			Asteroid a(AsteroidType::BIG, random, NULL);
+
+			// make sure new guy is not colliding with any players
+			bool colliding = false;
+			for(const Player &player : player_list)
+			{
+				if(player.collide(a, -75))
+				{
+					colliding = true;
+					break;
+				}
+			}
+
+			if(!colliding)
+				asteroid_list.push_back(a);
+		}
 	}
 
 	std::vector<Asteroid> intermediate;
@@ -666,6 +682,57 @@ void Particle::step(std::vector<Particle> &particle_list, float delta)
 
 		particle.x += particle.xv * delta;
 		particle.y += particle.yv * delta;
+
+		++it;
+	}
+}
+
+// *********
+// *********
+// FIREWORKS
+// *********
+// *********
+
+Firework::Firework(float X, float Y, const Color &c, mersenne &random)
+	: Entity(X, Y, FIREWORK_SIZE, FIREWORK_SIZE)
+	, color(c)
+	, ttl(random(FIREWORK_TTL))
+{
+	rot = random(0.0, 3.1415926 * 2);
+	xv = cosf(rot) * random(FIREWORK_SPEED);
+	yv = sinf(rot) * random(FIREWORK_SPEED);
+}
+
+void Firework::create(std::vector<Firework> &firework_list, float x, float y, mersenne &random)
+{
+	const int count = random(FIREWORK_COUNT);
+	const Color color(random);
+
+	for(int i = 0; i < count; ++i)
+	{
+		firework_list.push_back(Firework(x, y, color, random));
+	}
+}
+
+void Firework::step(std::vector<Firework> &firework_list, float delta)
+{
+	for(auto it = firework_list.begin(); it != firework_list.end();)
+	{
+		Firework &fw = *it;
+
+		fw.x += fw.xv * delta;
+		fw.y += fw.yv * delta;
+
+		const float RETARD = 0.999;
+		fw.xv *= RETARD;
+		fw.yv *= RETARD;
+
+		fw.ttl -= delta;
+		if(fw.ttl <= 0)
+		{
+			it = firework_list.erase(it);
+			continue;
+		}
 
 		++it;
 	}

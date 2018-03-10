@@ -44,6 +44,16 @@ void Asteroids::step()
 
 	// process particles
 	Particle::step(particle_list, delta);
+
+	// process fireworks
+	Firework::step(firework_list, delta);
+	// generate fireworks
+	if(win && random(20))
+	{
+		const float x = random(WORLD_LEFT, WORLD_RIGHT);
+		const float y = random(WORLD_TOP, WORLD_BOTTOM);
+		Firework::create(firework_list, x, y, random);
+	}
 }
 
 void Asteroids::input(const Controls &controls)
@@ -163,7 +173,8 @@ void Asteroids::integrate(const lmp::ServerInfo &info)
 	my_id = info.my_id;
 	score = info.score;
 	repair = info.repair;
-	paused = info.paused;
+	paused = info.paused == 1;
+	win = info.win == 1;
 }
 
 void Asteroids::integrate(const lmp::Player &lump)
@@ -228,7 +239,8 @@ void Asteroids::integrate(const lmp::Ship &lump)
 
 	state.ship_list.push_back({random, lump.id});
 	integrate(lump);
-	announcements.push({"Protect the passenger cruiser!"});
+	if(!win)
+		announcements.push({"Protect the passenger cruiser!"});
 }
 
 void Asteroids::integrate(const lmp::Remove &lump)
@@ -280,9 +292,10 @@ void Asteroids::integrate(const lmp::Remove &lump)
 					if((*it).health < 1)
 					{
 						Particle::create(particle_list, ship.x + (SHIP_WIDTH / 2), ship.y + (SHIP_HEIGHT / 2), 120, random);
-						announcements.push({"The passenger cruiser was destroyed\nand all 1 billion billion passengers were killed!"});
+						if(!win)
+							announcements.push({"The passenger cruiser was destroyed\nand all 1 billion billion passengers were killed!"});
 					}
-					else if(score != 0)
+					else if(score != 0 && !win)
 						announcements.push({"The passenger cruiser safely made it\nthrough the asteroid field!"});
 					state.ship_list.erase(it);
 					break;

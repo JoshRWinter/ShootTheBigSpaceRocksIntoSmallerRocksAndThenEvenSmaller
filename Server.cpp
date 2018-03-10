@@ -5,7 +5,9 @@
 int Client::last_id = 0;
 
 Server::Server()
-	: gameover_timer(TIMER_GAMEOVER)
+	: max_score(500)
+	, gameover_timer(TIMER_GAMEOVER)
+	, win_timer(TIMER_WIN)
 	, paused(false)
 	, running(true)
 	, tcp(SERVER_PORT)
@@ -185,6 +187,9 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 		info_present = true;
 	info.paused = paused;
 	info.score = state.score;
+	info.win = state.score >= max_score;
+	if(info.win)
+		info_present = true;
 	buffer.push(info);
 	if(paused && client.stepno != 0)
 		return;
@@ -316,6 +321,16 @@ void Server::step()
 		}
 	}
 
+	const bool won = state.score >= max_score && !gameover;
+	if(won)
+	{
+		if(--win_timer == 0)
+		{
+			state.reset();
+			win_timer = TIMER_WIN;
+		}
+	}
+
 	// process players
 	for(Client &client : client_list)
 		client.player(state.player_list).step(true, client.controls, state, 1.0f, random);
@@ -325,9 +340,13 @@ void Server::step()
 
 	// process asteroids
 	Asteroid::step(true, state.asteroid_list, state.player_list, NULL, random, 244);
+	if(won)
+		state.asteroid_list.clear();
 
 	// process ships
 	Ship::step(true, state, NULL, 1.0f, random);
+	if(won)
+		state.ship_list.clear();
 
 	// add this state to the history
 	history.push_back(state);

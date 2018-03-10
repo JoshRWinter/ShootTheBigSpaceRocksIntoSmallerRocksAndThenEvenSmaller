@@ -176,36 +176,45 @@ namespace lmp
 
 		void serialize(netbuf &nbuf) const
 		{
-			std::uint8_t repair_bits;
-			std::uint8_t mutable_pause = !!paused;
-			repair_bits = mutable_pause << 7;
-			repair_bits |= repair;
+			std::uint8_t normal_win = !!win;
+			std::uint8_t normal_pause = !!paused;
+
+			std::uint32_t win_and_stepno = normal_win << 31;
+			win_and_stepno |= stepno;
+
+			std::uint8_t pause_and_repair = normal_pause << 7;
+			pause_and_repair |= repair;
 
 			write(type, nbuf);
 
-			write(stepno, nbuf);
+			write(win_and_stepno, nbuf);
 			write(my_id, nbuf);
-			write(repair_bits, nbuf);
+			write(pause_and_repair, nbuf);
 			write(score, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
-			std::uint8_t repair_bits;
+			std::uint32_t win_and_stepno;
+			std::uint8_t pause_and_repair;
 
-			read(stepno, nbuf);
+			read(win_and_stepno, nbuf);
 			read(my_id, nbuf);
-			read(repair_bits, nbuf);
+			read(pause_and_repair, nbuf);
 			read(score, nbuf);
 
-			paused = (repair_bits & 128) == 128;
-			repair = repair_bits & 127;
+			paused = (pause_and_repair & 128) == 128;
+			repair = pause_and_repair & 127;
+
+			win = ((win_and_stepno >> 31) & 1) == 1;
+			stepno = win_and_stepno & 2147483647;
 		}
 
 		std::uint32_t stepno;
 		std::uint8_t my_id;
 		std::uint8_t repair;
 		std::uint8_t paused;
+		std::uint8_t win;
 		std::int32_t score;
 	};
 

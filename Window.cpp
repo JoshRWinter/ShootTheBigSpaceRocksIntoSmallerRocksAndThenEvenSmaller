@@ -143,6 +143,25 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawText((width() / 2) - (fm_score.width(final_score_str) / 2), (height() / 2) - 100 + fm_announcement.height() + 10, final_score_str);
 	}
 
+	// win text
+	if(game.win && !alldead)
+	{
+		const char *const victory_str = "Victory!";
+		painter.setFont(font_announcement);
+		painter.drawText((width() / 2) - (fm_announcement.width(victory_str) / 2), (height() / 2) - 100, victory_str);
+
+		// draw fireworks
+		for(const Firework &fw : game.firework_list)
+		{
+			float x = fw.x, y = fw.y;
+			game.adjust_coords(this, x, y);
+			painter.setBrush(QColor(fw.color.r, fw.color.g, fw.color.b));
+			painter.drawEllipse(x, y, FIREWORK_SIZE, FIREWORK_SIZE);
+		}
+
+		painter.setBrush({});
+	}
+
 	// draw hud
 	{
 		const Player *const me = game.me();

@@ -37,10 +37,12 @@ public:
 
 	GameState state;
 	std::vector<Particle> particle_list;
+	std::vector<Firework> firework_list;
 	std::uint8_t my_id;
 	int score;
 	unsigned repair;
 	bool paused;
+	bool win;
 
 private:
 	mersenne random;
