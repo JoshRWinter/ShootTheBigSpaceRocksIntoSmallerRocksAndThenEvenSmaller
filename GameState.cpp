@@ -301,11 +301,12 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 		}
 
 		// sometimes asteroids explode
+		const float probability_mult = asteroid_list.size() > 20 ? 1.0f : 0.5f;
 		int probability = 0;
 		if(aster.type == AsteroidType::BIG)
-			probability = 1800;
+			probability = 1800 * probability_mult;
 		else if(aster.type == AsteroidType::MED)
-			probability = 2200;
+			probability = 2200 * probability_mult;
 		else
 			probability = 1600;
 		if(random(probability) && server)
