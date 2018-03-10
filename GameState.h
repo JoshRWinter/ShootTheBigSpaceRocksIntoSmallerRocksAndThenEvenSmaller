@@ -142,6 +142,9 @@ struct GameState
 		, score(0)
 	{}
 
+	GameState(const GameState&);
+	void operator=(const GameState&) = delete;
+
 	void reset();
 
 	static GameState blank;
