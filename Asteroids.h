@@ -40,6 +40,7 @@ public:
 	std::uint8_t my_id;
 	int score;
 	unsigned repair;
+	bool paused;
 
 private:
 	mersenne random;

@@ -5,6 +5,7 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	, my_id(0)
 	, score(0)
 	, repair(0)
+	, paused(false)
 	, udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
@@ -24,6 +25,9 @@ void Asteroids::step()
 	}
 
 	recv();
+
+	if(paused)
+		return;
 
 	// process players
 	for(Player &player : state.player_list)
@@ -53,7 +57,7 @@ void Asteroids::input(const Controls &controls)
 	info.left = controls.left;
 	info.right = controls.right;
 	info.fire = controls.fire;
-	info.pause = controls.pause;
+	info.paused = controls.pause;
 	info.angle = controls.angle;
 	info.stepno = last_step;
 
@@ -159,6 +163,7 @@ void Asteroids::integrate(const lmp::ServerInfo &info)
 	my_id = info.my_id;
 	score = info.score;
 	repair = info.repair;
+	paused = info.paused;
 }
 
 void Asteroids::integrate(const lmp::Player &lump)

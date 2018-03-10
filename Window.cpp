@@ -185,6 +185,17 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawText(bar_x + (bar_width / 2) - (textwidth / 2), bar_y + (bar_height / 2) - (textheight / 2), textwidth, textheight, Qt::AlignCenter, text);
 	}
 
+	// handle the game being paused or not
+	if(game.paused)
+	{
+		painter.setBrush(QBrush(QColor(0, 0, 0, 200)));
+		painter.drawRect(0, 0, width(), height());
+		painter.setPen(QPen(Qt::white));
+		painter.setFont(font_announcement);
+		const char *const pause_str = "PAUSED";
+		painter.drawText((width() / 2) - (fm_announcement.width(pause_str) / 2), (height() / 2) - 100, pause_str);
+	}
+
 	// fps
 	{
 		static int fps, last;
@@ -244,6 +255,10 @@ void Window::process_keys(int key, bool press)
 {
 	switch(key)
 	{
+		case Qt::Key_Escape:
+			if(!press)
+				controls.pause = !controls.pause;
+			break;
 		// ARROW KEYS
 		case Qt::Key_Up:
 			controls.up = press;

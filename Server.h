@@ -37,6 +37,7 @@ private:
 	std::list<GameState> history;
 	std::vector<Client> client_list;
 	int gameover_timer;
+	bool paused;
 
 	mersenne random; // prng
 	std::atomic<bool> running; // flag to tell server to exit
@@ -50,7 +51,13 @@ private:
 
 struct Client
 {
-	Client(std::int32_t ident, std::int32_t sec) : stepno(0), id(ident), secret(sec), last_datagram_time(0) {}
+	Client(std::int32_t ident, std::int32_t sec)
+	: stepno(0)
+	, id(ident)
+	, secret(sec)
+	, paused(false)
+	, last_datagram_time(0)
+	{}
 
 	Player &player(std::vector<Player> &list) const
 	{
@@ -78,6 +85,7 @@ struct Client
 	std::uint32_t stepno;
 	std::int32_t id;
 	std::int32_t secret;
+	bool paused;
 	int last_datagram_time;
 };
 

@@ -6,6 +6,7 @@ int Client::last_id = 0;
 
 Server::Server()
 	: gameover_timer(TIMER_GAMEOVER)
+	, paused(false)
 	, running(true)
 	, tcp(SERVER_PORT)
 	, udp(SERVER_PORT)
@@ -182,8 +183,11 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	info.repair = repair_percentage;
 	if(repair_percentage != 0)
 		info_present = true;
+	info.paused = paused;
 	info.score = state.score;
 	buffer.push(info);
+	if(paused && client.stepno != 0)
+		return;
 
 	std::vector<const Entity*> ent_list;
 
@@ -242,6 +246,7 @@ void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 	Player &player = client.player(state.player_list);
 	player.shooting = client.controls.fire;
 	player.rot = client.controls.angle;
+	client.paused = lump.paused;
 }
 
 const GameState &Server::get_hist_state(unsigned stepno) const
@@ -277,6 +282,20 @@ void Server::check_timeout()
 void Server::step()
 {
 	++state.stepno;
+
+	// see about pausing the game
+	bool request_pause = false;
+	for(const Client &client : client_list)
+	{
+		if(client.paused)
+			request_pause = true;
+	}
+	if(request_pause)
+	{
+		paused = true;
+		return;
+	}
+	paused = false;
 
 	// see if players are all dead
 	bool gameover = true;

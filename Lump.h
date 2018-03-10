@@ -138,7 +138,7 @@ namespace lmp
 			bits |= left << 5;
 			bits |= right << 4;
 			bits |= fire << 3;
-			bits |= pause << 2;
+			bits |= paused << 2;
 
 			write(type, nbuf);
 
@@ -161,10 +161,10 @@ namespace lmp
 			left = (bits >> 5) & 1;
 			right = (bits >> 4) & 1;
 			fire = (bits >> 3) & 1;
-			pause = (bits >> 2) & 1;
+			paused = (bits >> 2) & 1;
 		}
 
-		int up, down, left, right, fire, pause;
+		int up, down, left, right, fire, paused;
 		float angle;
 		std::uint32_t stepno;
 		std::int32_t secret;
@@ -176,25 +176,36 @@ namespace lmp
 
 		void serialize(netbuf &nbuf) const
 		{
+			std::uint8_t repair_bits;
+			std::uint8_t mutable_pause = !!paused;
+			repair_bits = mutable_pause << 7;
+			repair_bits |= repair;
+
 			write(type, nbuf);
 
 			write(stepno, nbuf);
 			write(my_id, nbuf);
-			write(repair, nbuf);
+			write(repair_bits, nbuf);
 			write(score, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
+			std::uint8_t repair_bits;
+
 			read(stepno, nbuf);
 			read(my_id, nbuf);
-			read(repair, nbuf);
+			read(repair_bits, nbuf);
 			read(score, nbuf);
+
+			paused = (repair_bits & 128) == 128;
+			repair = repair_bits & 127;
 		}
 
 		std::uint32_t stepno;
 		std::uint8_t my_id;
 		std::uint8_t repair;
+		std::uint8_t paused;
 		std::int32_t score;
 	};
 
