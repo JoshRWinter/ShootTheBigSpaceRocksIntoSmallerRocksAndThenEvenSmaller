@@ -4,7 +4,7 @@
 
 #include "Window.h"
 
-Window::Window(const std::string &addr, int secret)
+Window::Window(Assets::PackType pack, const std::string &addr, int secret)
 	: font_announcement("sans-serif", 20)
 	, font_fps("sans-serif", 10)
 	, font_health("sans-serif", 12)
@@ -13,10 +13,19 @@ Window::Window(const std::string &addr, int secret)
 	, fm_fps(font_fps)
 	, fm_health(font_health)
 	, fm_score(font_score)
+	, assets(pack)
 	, game(addr, secret)
 {
 	resize(1000, 800);
 	setWindowTitle("Shoot The Big Space Rocks Into Smaller Rocks And Then Even Smaller");
+
+	// background color
+	if(assets.type == Assets::PackType::FANCY)
+	{
+		QPalette palette;
+		palette.setColor(QPalette::Background, QColor(10, 10, 10));
+		setPalette(palette);
+	}
 
 	auto timer = new QTimer(this);
 	QObject::connect(timer, &QTimer::timeout, this, &Window::step);
@@ -38,6 +47,7 @@ void Window::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 
 	// draw world boundaries
+	painter.setPen(assets.pen);
 	{
 		float x = WORLD_LEFT, y = WORLD_TOP;
 		game.adjust_coords(this, x, y);
@@ -46,6 +56,7 @@ void Window::paintEvent(QPaintEvent*)
 
 	// draw ships
 	painter.setFont(font_health);
+	painter.setPen(assets.ship_health_pen);
 	QFontMetrics health_fm(font_health);
 	for(const Ship &ship : game.state.ship_list)
 	{
@@ -57,10 +68,10 @@ void Window::paintEvent(QPaintEvent*)
 
 		// draw health
 		char health_str[10];
-		snprintf(health_str, sizeof(health_str), "%d%%", ship.health < 0 ? 0 : ship.health);
+		snprintf(health_str, sizeof(health_str), "%d", ship.health < 0 ? 0 : ship.health);
 		const int f_width = health_fm.width(health_str);
 		const int f_height = health_fm.height();
-		painter.drawText(x + (SHIP_WIDTH / 2) - (f_width / 2), y + (SHIP_HEIGHT / 2) - (f_height / 2), f_width, f_height, 0, health_str);
+		painter.drawText(x + (SHIP_WIDTH / 2) - (f_width / 2) + 1, y + (SHIP_HEIGHT / 2) - (f_height / 2), f_width, f_height, 0, health_str);
 	}
 
 	// draw asteroids
@@ -85,6 +96,7 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw booletts
+	painter.setPen(assets.bullet_pen);
 	for(const Bullet &bullet : game.state.bullet_list)
 	{
 		if(bullet.ttl > BULLET_TTL - 3)
@@ -97,7 +109,6 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw particles
-	// painter.setPen({Qt::black, 2});
 	for(const Particle &particle : game.particle_list)
 	{
 		float x = particle.x, y = particle.y;
@@ -109,6 +120,7 @@ void Window::paintEvent(QPaintEvent*)
 	}
 
 	// draw messages
+	painter.setPen(assets.pen);
 	if(!game.announcements.empty())
 	{
 		Announcement &msg = game.announcements.front();
@@ -174,7 +186,7 @@ void Window::paintEvent(QPaintEvent*)
 		const int health = me ? (me->health > 0 ? me->health : 0) : 100;
 
 		painter.drawRect(bar_x, bar_y, bar_width, bar_height);
-		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0) + (health > 0 ? 1 : 0), bar_height - (padding * 2) + 1), QBrush(Qt::black));
+		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2)) * (health / 100.0) + (health > 0 ? 1 : 0), bar_height - (padding * 2) + 1), assets.health_brush);
 
 		char score_str[20];
 		snprintf(score_str, sizeof(score_str), "%d", game.score);

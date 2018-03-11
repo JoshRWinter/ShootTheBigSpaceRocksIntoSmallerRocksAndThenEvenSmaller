@@ -108,8 +108,8 @@ struct Bullet : Entity
 	float ttl;
 };
 
-#define SHIP_WIDTH 80
-#define SHIP_HEIGHT 69
+#define SHIP_WIDTH 90
+#define SHIP_HEIGHT 77
 #define SHIP_SPEED 1
 struct Ship : Entity
 {

@@ -51,7 +51,7 @@ int run(QApplication &app)
 	if(!connect.exec())
 		return 1;
 
-	Window window(addr.length() > 0 ? addr : "127.0.0.1", connect.secret());
+	Window window(Assets::PackType::FANCY, addr.length() > 0 ? addr : "127.0.0.1", connect.secret());
 	window.show();
 
 	return app.exec();

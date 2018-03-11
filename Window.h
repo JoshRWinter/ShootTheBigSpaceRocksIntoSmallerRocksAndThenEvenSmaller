@@ -9,14 +9,43 @@
 
 struct Assets
 {
-	Assets()
+	enum class PackType
 	{
+		SIMPLE,
+		FANCY
+	};
+
+	Assets(PackType t)
+		: type(t)
+	{
+		// initialize asset pack variables
+		switch(type)
+		{
+			case PackType::SIMPLE:
+				path = "simple";
+				pen = QPen(Qt::black);
+				ship_health_pen = pen;
+				bullet_pen = pen;
+				health_brush = QBrush(Qt::black);
+				break;
+			case PackType::FANCY:
+				path = "fancy";
+				pen = QPen(Qt::white);
+				ship_health_pen = QPen(QColor(45, 245, 45));
+				bullet_pen = QPen(QColor(255, 255, 200));
+				health_brush = QBrush(Qt::white);
+				break;
+			default:
+				hcf("invalid pack type");
+				break;
+		}
+
 		// construct players
-		QPixmap initial_player("assets/player.png");
-		QPixmap initial_aster_big("assets/asteroid_big.png");
-		QPixmap initial_aster_med("assets/asteroid_med.png");
-		QPixmap initial_aster_small("assets/asteroid_small.png");
-		QPixmap initial_ship("assets/cruiser.png");
+		QPixmap initial_player(("assets/" + path + "/player.png").c_str());
+		QPixmap initial_aster_big(("assets/" + path + "/asteroid_big.png").c_str());
+		QPixmap initial_aster_med(("assets/" + path + "/asteroid_med.png").c_str());
+		QPixmap initial_aster_small(("assets/" + path + "/asteroid_small.png").c_str());
+		QPixmap initial_ship(("assets/" + path + "/cruiser.png").c_str());
 
 		for(int i = 0; i < 360; ++i)
 		{
@@ -53,13 +82,19 @@ struct Assets
 		hcf("invalid asteroid type");
 	}
 
+	const PackType type;
+	std::string path;
+	QPen pen;
+	QPen ship_health_pen;
+	QPen bullet_pen;
+	QBrush health_brush;
 	QPixmap player[360], asteroid_big[360], asteroid_med[360], asteroid_small[360], ship[360];
 };
 
 class Window : public QWidget
 {
 public:
-	Window(const std::string&, int);
+	Window(Assets::PackType, const std::string&, int);
 
 private:
 	void step();
