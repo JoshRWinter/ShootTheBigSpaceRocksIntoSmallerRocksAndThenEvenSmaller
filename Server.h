@@ -13,7 +13,7 @@
 struct Client;
 
 #define TIMER_GAMEOVER 400
-#define TIMER_WIN 600
+#define TIMER_WIN 700
 
 class Server
 {
