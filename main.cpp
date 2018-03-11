@@ -1,5 +1,6 @@
 #include <exception>
 #include <memory>
+#include <fstream>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -9,6 +10,7 @@
 #include "Window.h"
 
 static int run(QApplication&);
+static Assets::PackType get_asset_pack();
 
 #ifdef _WIN32
 static int argc = 0;
@@ -51,8 +53,32 @@ int run(QApplication &app)
 	if(!connect.exec())
 		return 1;
 
-	Window window(Assets::PackType::FANCY, addr.length() > 0 ? addr : "127.0.0.1", connect.secret());
+	Window window(get_asset_pack(), addr.length() > 0 ? addr : "127.0.0.1", connect.secret());
 	window.show();
 
 	return app.exec();
+}
+
+Assets::PackType get_asset_pack()
+{
+	const char *const path = "./assets/active.txt";
+
+	std::ifstream in(path);
+	if(!in)
+	{
+		QMessageBox::warning(NULL, "Asset Pack", "Could not determine the active asset pack!");
+		return Assets::PackType::FANCY;
+	}
+
+	std::string active;
+	std::getline(in, active);
+
+	if(active == "fancy")
+		return Assets::PackType::FANCY;
+	else if(active == "simple")
+		return Assets::PackType::SIMPLE;
+	else
+		QMessageBox::warning(NULL, "Unrecognized Asset Pack Name", std::string("The Asset Pack \"" + active + "\" was not recognized.").c_str());
+
+	return Assets::PackType::FANCY;
 }
