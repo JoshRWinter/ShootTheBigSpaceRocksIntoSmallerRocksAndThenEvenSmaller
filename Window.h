@@ -26,14 +26,18 @@ struct Assets
 				pen = QPen(Qt::black);
 				ship_health_pen = pen;
 				bullet_pen = pen;
+				pause_screen_text_pen = QPen(Qt::white);
 				health_brush = QBrush(Qt::black);
+				pause_screen_brush = QBrush(QColor(50, 50, 50, 200));
 				break;
 			case PackType::FANCY:
 				path = "fancy";
 				pen = QPen(Qt::white);
 				ship_health_pen = QPen(QColor(45, 245, 45));
 				bullet_pen = QPen(QColor(255, 255, 200));
+				pause_screen_text_pen = QPen(Qt::black);
 				health_brush = QBrush(Qt::white);
+				pause_screen_brush = QBrush(QColor(120, 120, 120, 100));
 				break;
 			default:
 				hcf("invalid pack type");
@@ -87,7 +91,9 @@ struct Assets
 	QPen pen;
 	QPen ship_health_pen;
 	QPen bullet_pen;
+	QPen pause_screen_text_pen;
 	QBrush health_brush;
+	QBrush pause_screen_brush;
 	QPixmap player[360], asteroid_big[360], asteroid_med[360], asteroid_small[360], ship[360];
 };
 

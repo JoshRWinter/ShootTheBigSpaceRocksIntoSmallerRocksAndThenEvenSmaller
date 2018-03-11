@@ -207,7 +207,7 @@ void Window::paintEvent(QPaintEvent*)
 		const int repair = game.repair;
 
 		painter.drawRect(bar_x, bar_y, bar_width, bar_height);
-		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2) + 1) * (repair / 100.0), bar_height - (padding * 2) + 1), QBrush(Qt::black));
+		painter.fillRect(QRect(bar_x + padding, bar_y + padding, (bar_width - (padding * 2) + 1) * (repair / 100.0), bar_height - (padding * 2) + 1), assets.health_brush);
 
 		const char *const text = my_health > 0 ? "Repairing" : "Being Repaired";
 		const int textwidth = fm_score.width(text);
@@ -219,9 +219,10 @@ void Window::paintEvent(QPaintEvent*)
 	// handle the game being paused or not
 	if(game.paused)
 	{
-		painter.setBrush(QBrush(QColor(0, 0, 0, 200)));
+		painter.setBrush(assets.pause_screen_brush);
+		painter.setPen(Qt::NoPen);
 		painter.drawRect(0, 0, width(), height());
-		painter.setPen(QPen(Qt::white));
+		painter.setPen(assets.pause_screen_text_pen);
 		painter.setFont(font_announcement);
 		const char *const pause_str = "PAUSED";
 		painter.drawText((width() / 2) - (fm_announcement.width(pause_str) / 2), (height() / 2) - 100, pause_str);
