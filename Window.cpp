@@ -144,7 +144,7 @@ void Window::paintEvent(QPaintEvent*)
 			alldead = false;
 			break;
 		}
-	if(alldead)
+	if(alldead && game.state.player_list.size() > 0)
 	{
 		const char *const go_str = "Game Over";
 		char final_score_str[30];
