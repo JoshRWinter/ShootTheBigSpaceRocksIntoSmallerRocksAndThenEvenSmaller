@@ -371,9 +371,11 @@ void Server::loop(Server *s)
 			server.send(); // send data to clients
 
 			server.check_timeout(); // see who has timed out
-		}
 
-		server.wait(); // sleep (or spinlock) until time for next loop
+			server.wait(); // sleep (or spinlock) until time for next loop
+		}
+		else
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 }
 
