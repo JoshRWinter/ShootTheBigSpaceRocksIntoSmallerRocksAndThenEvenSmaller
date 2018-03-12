@@ -4,5 +4,6 @@ winqt
 .*.swp
 Makefile.qmake
 stbsrisrates
+stbsrisrates-dedicated
 .qmake.stash
 qtver.bat

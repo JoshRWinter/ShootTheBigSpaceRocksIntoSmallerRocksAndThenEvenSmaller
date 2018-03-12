@@ -362,14 +362,54 @@ void Server::loop(Server *s)
 	{
 		server.accept(); // accept or reject new clients
 
-		server.recv(); // receive data from clients
+		if(server.client_list.size() > 0)
+		{
+			server.recv(); // receive data from clients
 
-		server.step(); // one world-simulation step
+			server.step(); // one world-simulation step
 
-		server.send(); // send data to clients
+			server.send(); // send data to clients
 
-		server.check_timeout(); // see who has timed out
+			server.check_timeout(); // see who has timed out
+		}
 
 		server.wait(); // sleep (or spinlock) until time for next loop
 	}
 }
+
+#ifdef FREE_SERVER
+
+#ifndef _WIN32
+#include <signal.h>
+#endif // _WIN32
+
+static std::atomic<bool> working = true;
+
+int main()
+{
+
+#ifndef _WIN32
+	void (*handler)(int) = [](int sig){ if(sig != SIGPIPE) working = false; };
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
+	signal(SIGPIPE, handler);
+#endif // _WIN32
+
+	try
+	{
+		Server server;
+		while(working)
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+		log("exiting");
+	}
+	catch(const std::exception &e)
+	{
+		log("%s", e.what());
+		return 1;
+	}
+
+	return 0;
+}
+
+#endif // FREE_SERVER
