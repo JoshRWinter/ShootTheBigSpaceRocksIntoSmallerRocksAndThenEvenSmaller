@@ -383,11 +383,11 @@ void Server::loop(Server *s)
 #include <signal.h>
 #endif // _WIN32
 
-static std::atomic<bool> working = true;
+static std::atomic<bool> working;
 
 int main()
 {
-
+	working = true;
 #ifndef _WIN32
 	void (*handler)(int) = [](int sig){ if(sig != SIGPIPE) working = false; };
 	signal(SIGINT, handler);
