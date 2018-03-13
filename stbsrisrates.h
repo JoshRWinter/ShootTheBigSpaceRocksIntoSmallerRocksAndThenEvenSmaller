@@ -23,7 +23,7 @@
 #define WORLD_RIGHT (WORLD_LEFT + WORLD_WIDTH)
 #define WORLD_BOTTOM (WORLD_TOP + WORLD_HEIGHT)
 
-#define hcf(fmt, ...) {log("\033[35;1mFatal Error:\033[0m " fmt, ##__VA_ARGS__);std::abort();}
+#define hcf(fmt, ...) {lprintf("\033[35;1mFatal Error:\033[0m " fmt, ##__VA_ARGS__);std::abort();}
 
 class mersenne
 {

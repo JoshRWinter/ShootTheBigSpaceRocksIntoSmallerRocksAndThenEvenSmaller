@@ -133,17 +133,17 @@ namespace lmp
 		void serialize(netbuf &nbuf) const
 		{
 			std::uint8_t bits = 0;
-			bits |= up << 7;
-			bits |= down << 6;
-			bits |= left << 5;
-			bits |= right << 4;
-			bits |= fire << 3;
-			bits |= paused << 2;
+			bits |= fire << 0;
+			bits |= paused << 1;
+
+			std::int8_t int_x = x * 100, int_y = y * 100;
 
 			write(type, nbuf);
 
 			write(secret, nbuf);
 			write(stepno, nbuf);
+			write(int_x, nbuf);
+			write(int_y, nbuf);
 			write(bits, nbuf);
 			write(angle, nbuf);
 		}
@@ -151,23 +151,28 @@ namespace lmp
 		void deserialize(netbuf &nbuf)
 		{
 			std::uint8_t bits = 0;
+
+			std::int8_t int_x, int_y;
+
 			read(secret, nbuf);
 			read(stepno, nbuf);
+			read(int_x, nbuf);
+			read(int_y, nbuf);
 			read(bits, nbuf);
 			read(angle, nbuf);
 
-			up = (bits >> 7) & 1;
-			down = (bits >> 6) & 1;
-			left = (bits >> 5) & 1;
-			right = (bits >> 4) & 1;
-			fire = (bits >> 3) & 1;
-			paused = (bits >> 2) & 1;
+			fire = (bits >> 0) & 1;
+			paused = (bits >> 1) & 1;
+			x = int_x / 100.0;
+			y = int_y / 100.0;
 		}
 
-		int up, down, left, right, fire, paused;
-		float angle;
 		std::uint32_t stepno;
 		std::int32_t secret;
+		float x;
+		float y;
+		std::uint8_t fire, paused;
+		float angle;
 	};
 
 	struct ServerInfo : Lump

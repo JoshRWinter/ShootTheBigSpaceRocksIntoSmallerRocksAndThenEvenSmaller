@@ -22,10 +22,16 @@ enum class AsteroidType : std::uint8_t
 struct Controls
 {
 	Controls()
-		: left(false), right(false), up(false), down(false), fire(false), angle(0.0f), pause(false)
+		: x(0)
+		, y(0)
+		, fire(false)
+		, angle(0.0f)
+		, pause(false)
 	{}
 
-	bool left, right, up, down, fire;
+	float x;
+	float y;
+	bool fire;
 	float angle;
 	bool pause;
 };

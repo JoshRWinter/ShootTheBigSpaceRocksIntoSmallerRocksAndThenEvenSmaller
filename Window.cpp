@@ -4,8 +4,13 @@
 
 #include "Window.h"
 
+#define GAMEPAD_TOLERANCE 0.2f
+
 Window::Window(Assets::PackType pack, const std::string &addr, int secret)
-	: font_announcement("sans-serif", 20)
+	: axis_x(0)
+	, axis_y(0)
+	, gamepad_mode(false)
+	, font_announcement("sans-serif", 20)
 	, font_fps("sans-serif", 10)
 	, font_health("sans-serif", 12)
 	, font_score("sans-serif", 15)
@@ -16,6 +21,7 @@ Window::Window(Assets::PackType pack, const std::string &addr, int secret)
 	, assets(pack)
 	, game(addr, secret)
 {
+	setCursor(Qt::CrossCursor);
 	resize(1000, 800);
 	setWindowTitle("Shoot The Big Space Rocks Into Smaller Rocks And Then Even Smaller");
 
@@ -32,6 +38,12 @@ Window::Window(Assets::PackType pack, const std::string &addr, int secret)
 	timer->start(16);
 
 	setMouseTracking(true);
+
+	// gamepad setup
+	QGamepadManager *const manager = QGamepadManager::instance();
+	QObject::connect(manager, &QGamepadManager::gamepadAxisEvent, this, &Window::gamepad_axis);
+	QObject::connect(manager, &QGamepadManager::gamepadButtonPressEvent, this, &Window::gamepad_button_press);
+	QObject::connect(manager, &QGamepadManager::gamepadButtonReleaseEvent, this, &Window::gamepad_button_release);
 }
 
 void Window::step()
@@ -264,16 +276,22 @@ void Window::keyReleaseEvent(QKeyEvent *event)
 
 void Window::mousePressEvent(QMouseEvent*)
 {
+	set_gamepad_mode(false);
+
 	controls.fire = true;
 }
 
 void Window::mouseReleaseEvent(QMouseEvent*)
 {
+	set_gamepad_mode(false);
+
 	controls.fire = false;
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event)
 {
+	set_gamepad_mode(false);
+
 	const int x = event->x();
 	const int y = event->y();
 
@@ -285,50 +303,108 @@ void Window::mouseMoveEvent(QMouseEvent *event)
 
 void Window::process_keys(int key, bool press)
 {
+	set_gamepad_mode(false);
+
+	const float value = press ? 1.0f : 0.0f;
 	switch(key)
 	{
 		case Qt::Key_Escape:
 			if(!press)
 				controls.pause = !controls.pause;
 			break;
-		// ARROW KEYS
-		case Qt::Key_Up:
-			controls.up = press;
-			break;
-		case Qt::Key_Down:
-			controls.down = press;
-			break;
-		case Qt::Key_Right:
-			controls.right = press;
-			break;
-		case Qt::Key_Left:
-			controls.left = press;
-			break;
 
-		// QWERTY WASD
 		case Qt::Key_W:
-			controls.up = press;
-			break;
-		case Qt::Key_A:
-			controls.left = press;
+		case Qt::Key_Comma:
+		case Qt::Key_Up:
+			controls.y = value;
 			break;
 		case Qt::Key_S:
-			controls.down = press;
+		case Qt::Key_O:
+		case Qt::Key_Down:
+			controls.y = -value;
 			break;
 		case Qt::Key_D:
-			controls.right = press;
-			break;
-
-		// DVORAK WASD
-		case Qt::Key_Comma:
-			controls.up = press;
-			break;
-		case Qt::Key_O:
-			controls.down = press;
-			break;
 		case Qt::Key_E:
-			controls.right = press;
+		case Qt::Key_Right:
+			controls.x = value;
 			break;
+		case Qt::Key_A:
+		case Qt::Key_Left:
+			controls.x = -value;
+			break;
+	}
+}
+
+void Window::set_gamepad_mode(bool gamepad)
+{
+	if(gamepad == false && gamepad_mode == true)
+	{
+		setCursor(Qt::CrossCursor);
+		gamepad_mode = false;
+	}
+	else if(gamepad == true && gamepad_mode == false)
+	{
+		setCursor(Qt::BlankCursor);
+		gamepad_mode = true;
+	}
+}
+
+void Window::gamepad_axis(int, QGamepadManager::GamepadAxis axis, double value)
+{
+	set_gamepad_mode(true);
+
+	switch(axis)
+	{
+		case QGamepadManager::GamepadAxis::AxisLeftX:
+			if(fabs(value) >= GAMEPAD_TOLERANCE || fabs(controls.y) >= GAMEPAD_TOLERANCE)
+				controls.x = value;
+			else
+				controls.x = 0.0f;
+			break;
+		case QGamepadManager::GamepadAxis::AxisLeftY:
+			if(fabs(value) >= GAMEPAD_TOLERANCE || fabs(controls.x) >= GAMEPAD_TOLERANCE)
+				controls.y = -value;
+			else
+				controls.y = 0.0f;
+			break;
+		case QGamepadManager::GamepadAxis::AxisRightX:
+			axis_x = value;
+			if(fabs(value) >= GAMEPAD_TOLERANCE || fabs(axis_y) >= GAMEPAD_TOLERANCE)
+				controls.angle = -atan2f(axis_y, axis_x);
+			break;
+		case QGamepadManager::GamepadAxis::AxisRightY:
+			axis_y = -value;
+			if(fabs(value) >= GAMEPAD_TOLERANCE || fabs(axis_x) >= GAMEPAD_TOLERANCE)
+				controls.angle = -atan2f(axis_y, axis_x);
+			break;
+		default: break;
+	}
+}
+
+void Window::gamepad_button_press(int, QGamepadManager::GamepadButton button, double value)
+{
+	gamepad_button(button, value > 0.5f);
+}
+
+void Window::gamepad_button_release(int, QGamepadManager::GamepadButton button)
+{
+	gamepad_button(button, false);
+}
+
+void Window::gamepad_button(QGamepadManager::GamepadButton button, bool press)
+{
+	set_gamepad_mode(true);
+
+	switch(button)
+	{
+		case QGamepadManager::GamepadButton::ButtonR2:
+			controls.fire = press;
+			break;
+		case QGamepadManager::GamepadButton::ButtonStart:
+			if(press)
+				controls.pause = !controls.pause;
+			break;
+		default: break;
 	}
 }
 

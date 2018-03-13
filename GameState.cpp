@@ -78,31 +78,23 @@ void Player::step(bool server, const Controls &controls, GameState &state, float
 {
 	if(server)
 	{
-		if(health > 0 && (controls.left || controls.right))
+		if(health > 0)
 		{
-			timer_idle = 0;
+			const float travel_angle = atan2f(controls.y, controls.x);
+			const float intensity = sqrtf(powf(controls.x, 2) + powf(controls.y, 2));
+			const float normal_intensity = intensity > 1.0f ? 1.0f : intensity;
+			const float xvel = cosf(travel_angle) * normal_intensity * PLAYER_MAX_SPEED;
+			const float yvel = -sinf(travel_angle) * normal_intensity * PLAYER_MAX_SPEED;
 
-			if(controls.right)
-				xv += PLAYER_SPEEDUP;
-			if(controls.left)
-				xv -= PLAYER_SPEEDUP;
+			targetf(&xv, PLAYER_SPEEDUP, xvel);
+			targetf(&yv, PLAYER_SPEEDUP, yvel);
+
+			if(fabsf(xvel) > 0.0f || fabsf(yvel) > 0.0f)
+				timer_idle = 0;
 		}
 		else
 		{
 			zerof(&xv, PLAYER_SPEEDUP);
-		}
-
-		if(health > 0 && (controls.up || controls.down))
-		{
-			timer_idle = 0;
-
-			if(controls.up)
-				yv -= PLAYER_SPEEDUP;
-			if(controls.down)
-				yv += PLAYER_SPEEDUP;
-		}
-		else
-		{
 			zerof(&yv, PLAYER_SPEEDUP);
 		}
 

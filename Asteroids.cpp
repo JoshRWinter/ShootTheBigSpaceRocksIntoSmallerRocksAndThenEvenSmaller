@@ -62,10 +62,8 @@ void Asteroids::input(const Controls &controls)
 
 	lmp::ClientInfo info;
 	info.secret = udp_secret;
-	info.up = controls.up;
-	info.down = controls.down;
-	info.left = controls.left;
-	info.right = controls.right;
+	info.x = controls.x;
+	info.y = controls.y;
 	info.fire = controls.fire;
 	info.paused = controls.pause;
 	info.angle = controls.angle;
@@ -119,7 +117,7 @@ void Asteroids::recv()
 			const int cursec = time(NULL);
 			if(cursec != last_second)
 			{
-				log("%.3f kilobytes/sec", bytes / 1000.0);
+				lprintf("%.3f kilobytes/sec", bytes / 1000.0);
 				last_second = cursec;
 				bytes = 0;
 			}
@@ -131,7 +129,7 @@ void Asteroids::recv()
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
 		if(info == NULL)
 		{
-			log("no server info present in net buffer");
+			lprintf("no server info present in net buffer");
 			continue;
 		}
 

@@ -53,7 +53,7 @@ void Server::wait()
 		if(current != second)
 		{
 			if(state.stepno > 200 && sps < 56)
-				log("sps == %d -- having trouble keeping up", sps);
+				lprintf("sps == %d -- having trouble keeping up", sps);
 			sps = 0;
 			second = current;
 		}
@@ -99,7 +99,7 @@ void Server::kick(const Client &client, const std::string &reason)
 	{
 		if((*it).id == client.id)
 		{
-			log("client %d kicked (%s)", client.id, reason.c_str());
+			lprintf("client %d kicked (%s)", client.id, reason.c_str());
 			client_list.erase(it);
 			break;
 		}
@@ -133,14 +133,14 @@ void Server::recv()
 		const lmp::ClientInfo *const info = net_buffer.pop<lmp::ClientInfo>();
 		if(info == NULL)
 		{
-			log("no client info present in net buffer");
+			lprintf("no client info present in net buffer");
 			continue;
 		}
 
 		Client *const client = Client::by_secret(info->secret, client_list);
 		if(client == NULL)
 		{
-			log("received a datagram from an unrecognized client");
+			lprintf("received a datagram from an unrecognized client");
 			continue;
 		}
 		else if(!client->udpid.initialized)
@@ -240,10 +240,8 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 
 void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 {
-	client.controls.up = lump.up == 1;
-	client.controls.right = lump.right == 1;
-	client.controls.left = lump.left == 1;
-	client.controls.down = lump.down == 1;
+	client.controls.x = lump.x;
+	client.controls.y = lump.y;
 	client.controls.fire = lump.fire == 1;
 	client.controls.angle = lump.angle;
 	client.stepno = lump.stepno;
@@ -251,7 +249,7 @@ void Server::integrate_client(Client &client, const lmp::ClientInfo &lump)
 	Player &player = client.player(state.player_list);
 	player.shooting = client.controls.fire;
 	player.rot = client.controls.angle;
-	client.paused = lump.paused;
+	client.paused = lump.paused == 1;
 }
 
 const GameState &Server::get_hist_state(unsigned stepno) const
@@ -403,11 +401,11 @@ int main()
 		while(working)
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-		log("exiting");
+		lprintf("exiting");
 	}
 	catch(const std::exception &e)
 	{
-		log("%s", e.what());
+		lprintf("%s", e.what());
 		return 1;
 	}
 

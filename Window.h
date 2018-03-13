@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QKeyEvent>
 #include <QPixmap>
+#include <QGamepadManager>
 
 #include "Asteroids.h"
 
@@ -111,8 +112,18 @@ private:
 	void mouseReleaseEvent(QMouseEvent*);
 	void mouseMoveEvent(QMouseEvent*);
 	void process_keys(int, bool);
+	void set_gamepad_mode(bool);
+
+	void gamepad_axis(int, QGamepadManager::GamepadAxis, double);
+	void gamepad_button_press(int, QGamepadManager::GamepadButton, double);
+	void gamepad_button_release(int, QGamepadManager::GamepadButton);
+	void gamepad_button(QGamepadManager::GamepadButton, bool);
+	void gamepad_button_pause(bool);
 
 	static int text_width(const QFontMetrics&, const QString&);
+
+	double axis_x, axis_y; // gamepad axis for right joystick
+	bool gamepad_mode;
 
 	QFont font_announcement;
 	QFont font_fps;
