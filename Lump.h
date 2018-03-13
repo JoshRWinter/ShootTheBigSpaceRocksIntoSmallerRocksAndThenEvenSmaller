@@ -241,6 +241,15 @@ namespace lmp
 
 		void serialize(netbuf &nbuf) const
 		{
+			const float pi = 3.1415926;
+
+			float normal_rot = rot;
+			while(normal_rot < 0.0f)
+				normal_rot += 2 * pi;
+			while(normal_rot >= 2 * pi)
+				normal_rot -= 2 * pi;
+			std::uint16_t angle = normal_rot * (180.0 / 3.1415926);
+
 			write(type, nbuf);
 
 			write(id, nbuf);
@@ -248,21 +257,25 @@ namespace lmp
 			write(y, nbuf);
 			write(xv, nbuf);
 			write(yv, nbuf);
-			write(rot, nbuf);
+			write(angle, nbuf);
 			write(shooting, nbuf);
 			write(health, nbuf);
 		}
 
 		void deserialize(netbuf &nbuf)
 		{
+			std::uint16_t angle;
+
 			read(id, nbuf);
 			read(x, nbuf);
 			read(y, nbuf);
 			read(xv, nbuf);
 			read(yv, nbuf);
-			read(rot, nbuf);
+			read(angle, nbuf);
 			read(shooting, nbuf);
 			read(health, nbuf);
+
+			rot = angle * (3.1415926 / 180.0);
 		};
 
 		std::int8_t id;
