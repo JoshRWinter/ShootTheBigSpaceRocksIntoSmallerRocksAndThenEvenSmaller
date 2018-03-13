@@ -183,6 +183,7 @@ void Window::paintEvent(QPaintEvent*)
 			painter.setBrush(QColor(fw.color.r, fw.color.g, fw.color.b));
 			painter.drawEllipse(x, y, FIREWORK_SIZE, FIREWORK_SIZE);
 		}
+		painter.setPen(assets.pen);
 
 		painter.setBrush({});
 	}
