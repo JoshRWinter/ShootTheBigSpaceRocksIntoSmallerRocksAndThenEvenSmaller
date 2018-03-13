@@ -190,7 +190,7 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 		info_present = true;
 	info.paused = paused;
 	info.score = state.score;
-	info.win = state.score >= max_score;
+	info.win = check_win();
 	if(info.win)
 		info_present = true;
 	buffer.push(info);
@@ -285,6 +285,17 @@ void Server::check_timeout()
 	}
 }
 
+bool Server::check_win() const
+{
+	for(const Player &p : state.player_list)
+	{
+		if(p.health < 1)
+			return false;
+	}
+
+	return state.score >= max_score && state.ship_list.size() == 0;
+}
+
 void Server::step()
 {
 	++state.stepno;
@@ -322,7 +333,7 @@ void Server::step()
 		}
 	}
 
-	const bool won = state.score >= max_score && !gameover;
+	const bool won = check_win();
 	if(won)
 	{
 		if(--win_timer == 0)

@@ -31,6 +31,7 @@ private:
 	void integrate_client(Client&, const lmp::ClientInfo&);
 	const GameState &get_hist_state(unsigned) const;
 	void check_timeout();
+	bool check_win() const;
 	void step();
 	static void loop(Server*);
 
