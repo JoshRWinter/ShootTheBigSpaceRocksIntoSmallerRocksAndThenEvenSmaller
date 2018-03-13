@@ -52,7 +52,7 @@ void Server::wait()
 		const int current = time(NULL);
 		if(current != second)
 		{
-			if(state.stepno > 200 && sps < 56)
+			if(state.stepno > 200 && sps < 56 && sps != 1)
 				lprintf("sps == %d -- having trouble keeping up", sps);
 			sps = 0;
 			second = current;
@@ -75,6 +75,9 @@ void Server::accept()
 
 	if(!accept_client)
 		return;
+
+	if(client_list.size() == 0)
+		state.reset();
 
 	Client client(++Client::last_id, random(0, 500'000'000));
 	Player player(client.id);
