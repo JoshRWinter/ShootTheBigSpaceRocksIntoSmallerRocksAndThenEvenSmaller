@@ -238,7 +238,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.setPen(assets.pause_screen_text_pen);
 		painter.setFont(font_announcement);
 		const char *const pause_str = "PAUSED";
-		painter.drawText((width() / 2) - (fm_announcement.width(pause_str) / 2), (height() / 2) - 100, pause_str);
+		painter.drawText((width() / 2) - (fm_announcement.width(pause_str) / 2), (height() / 2) - 200, pause_str);
 	}
 
 	/*
@@ -410,6 +410,10 @@ void Window::gamepad_button(QGamepadManager::GamepadButton button, bool press)
 		case QGamepadManager::GamepadButton::ButtonSelect:
 			if(press)
 				setWindowState(windowState() ^ Qt::WindowFullScreen);
+			break;
+		case QGamepadManager::GamepadButton::ButtonB:
+			if(controls.pause)
+				controls.pause = false;
 			break;
 		default: break;
 	}
