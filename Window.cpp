@@ -175,6 +175,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawText((width() / 2) - (fm_announcement.width(victory_str) / 2), (height() / 2) - 100, victory_str);
 
 		// draw fireworks
+		painter.setPen(Qt::NoPen);
 		for(const Firework &fw : game.firework_list)
 		{
 			float x = fw.x, y = fw.y;
@@ -240,6 +241,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.drawText((width() / 2) - (fm_announcement.width(pause_str) / 2), (height() / 2) - 100, pause_str);
 	}
 
+	/*
 	// fps
 	{
 		static int fps, last;
@@ -258,6 +260,7 @@ void Window::paintEvent(QPaintEvent*)
 		painter.setFont(font_fps);
 		painter.drawText(QPointF(10.0, 10.0), fpsstr);
 	}
+	*/
 }
 
 void Window::keyPressEvent(QKeyEvent *event)

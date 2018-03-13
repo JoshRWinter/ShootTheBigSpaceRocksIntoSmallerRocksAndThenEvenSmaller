@@ -141,9 +141,9 @@ struct Particle : Entity
 	float ttl;
 };
 
-#define FIREWORK_SIZE 5
+#define FIREWORK_SIZE 8
 #define FIREWORK_TTL 60, 90
-#define FIREWORK_SPEED 1.5, 2.4
+#define FIREWORK_SPEED 1.0, 2.4
 #define FIREWORK_COUNT 13, 20
 struct Firework : Entity
 {
