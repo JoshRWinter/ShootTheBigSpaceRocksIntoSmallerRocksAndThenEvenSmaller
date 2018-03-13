@@ -88,7 +88,7 @@ struct Asteroid : Entity
 
 	bool diff(const Asteroid&) const;
 
-	static void step(bool, std::vector<Asteroid>&, std::vector<Player>&, std::vector<Particle>*, mersenne&, float);
+	static void step(bool, GameState&, std::vector<Particle>*, mersenne&, float);
 	static AsteroidType next(AsteroidType);
 
 	static int last_id;

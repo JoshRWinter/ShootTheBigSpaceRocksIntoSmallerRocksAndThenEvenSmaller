@@ -230,13 +230,13 @@ Asteroid::Asteroid(AsteroidType t, mersenne &random, const Asteroid *parent, int
 	}
 }
 
-void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vector<Player> &player_list, std::vector<Particle> *particle_list, mersenne &random, float delta)
+void Asteroid::step(bool server, GameState &state, std::vector<Particle> *particle_list, mersenne &random, float delta)
 {
 	if(server)
 	{
 		// figure out potential # of asteroids
 		int potential = 0;
-		for(const Asteroid &aster : asteroid_list)
+		for(const Asteroid &aster : state.asteroid_list)
 		{
 			if(aster.type == AsteroidType::BIG)
 				potential += 9;
@@ -254,7 +254,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 
 			// make sure new guy is not colliding with any players
 			bool colliding = false;
-			for(const Player &player : player_list)
+			for(const Player &player : state.player_list)
 			{
 				if(player.collide(a, -75))
 				{
@@ -263,19 +263,29 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 				}
 			}
 
+			// make sure new guy is not colliding with any ships
+			for(const Ship &ship : state.ship_list)
+			{
+				if(ship.collide(a, -100))
+				{
+					colliding = true;
+					break;
+				}
+			}
+
 			if(!colliding)
-				asteroid_list.push_back(a);
+				state.asteroid_list.push_back(a);
 		}
 	}
 
 	std::vector<Asteroid> intermediate;
 
-	for(auto it = asteroid_list.begin(); it != asteroid_list.end();)
+	for(auto it = state.asteroid_list.begin(); it != state.asteroid_list.end();)
 	{
 		Asteroid &aster = *it;
 
 		// check for collisions with player
-		for(Player &player : player_list)
+		for(Player &player : state.player_list)
 		{
 			if(player.health > 0 && aster.collide(player, 10))
 			{
@@ -317,7 +327,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 		}
 
 		// sometimes asteroids explode
-		const float probability_mult = asteroid_list.size() > 20 ? 1.0f : 0.5f;
+		const float probability_mult = state.asteroid_list.size() > 20 ? 1.0f : 0.5f;
 		int probability = 0;
 		if(aster.type == AsteroidType::BIG)
 			probability = 1800 * probability_mult;
@@ -336,7 +346,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 				}
 			}
 
-			it = asteroid_list.erase(it);
+			it = state.asteroid_list.erase(it);
 			continue;
 		}
 
@@ -355,7 +365,7 @@ void Asteroid::step(bool server, std::vector<Asteroid> &asteroid_list, std::vect
 			aster.xv = cosf(angle) * explode_speed;
 			aster.yv = sinf(angle) * explode_speed;
 
-			asteroid_list.push_back(aster);
+			state.asteroid_list.push_back(aster);
 		}
 	}
 }
