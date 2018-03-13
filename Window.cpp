@@ -404,6 +404,10 @@ void Window::gamepad_button(QGamepadManager::GamepadButton button, bool press)
 			if(press)
 				controls.pause = !controls.pause;
 			break;
+		case QGamepadManager::GamepadButton::ButtonSelect:
+			if(press)
+				setWindowState(windowState() ^ Qt::WindowFullScreen);
+			break;
 		default: break;
 	}
 }
