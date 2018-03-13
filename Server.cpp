@@ -386,12 +386,17 @@ void Server::loop(Server *s)
 #include <signal.h>
 #endif // _WIN32
 
+#include <iostream>
+
 static std::atomic<bool> working;
 
 int main()
 {
 	working = true;
-#ifndef _WIN32
+#ifdef _WIN32
+	BOOL (WINAPI *handler)(DWORD) = [](DWORD sig){ working = false; return TRUE; };
+	SetConsoleCtrlHandler(handler, true);
+#else
 	void (*handler)(int) = [](int sig){ if(sig != SIGPIPE) working = false; };
 	signal(SIGINT, handler);
 	signal(SIGTERM, handler);
@@ -401,6 +406,7 @@ int main()
 	try
 	{
 		Server server;
+		std::cout << "[ready on tcp:" << SERVER_PORT << " udp:" << SERVER_PORT << "]" << std::endl;
 		while(working)
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
