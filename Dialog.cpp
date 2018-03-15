@@ -54,7 +54,11 @@ dlg::Greeter::Greeter()
 	quit->setToolTip(":(");
 	connect->setMaximumWidth(60);
 
-	QObject::connect(host, &QPushButton::clicked, this, &QDialog::accept);
+	QObject::connect(host, &QPushButton::clicked, [this]
+	{
+		address->clear();
+		accept();
+	});
 	QObject::connect(connect, &QPushButton::clicked, [this]
 	{
 		if(address->text().length() == 0)
