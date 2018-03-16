@@ -31,6 +31,7 @@ public:
 	void input(const Controls&);
 	void adjust_coords(const QWidget*, float&, float&) const;
 	const Player *me() const;
+	bool timed_out() const;
 
 	std::queue<Announcement> announcements;
 	float delta;
@@ -43,6 +44,7 @@ public:
 	unsigned repair;
 	bool paused;
 	bool win;
+	int time_last_datagram;
 
 private:
 	mersenne random;

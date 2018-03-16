@@ -1,6 +1,8 @@
+#include <QApplication>
 #include <QPainter>
 #include <QTimer>
 #include <QTransform>
+#include <QMessageBox>
 
 #include "Window.h"
 
@@ -50,6 +52,12 @@ void Window::step()
 {
 	game.input(controls);
 	game.step();
+	// see if i'm timed out
+	if(game.timed_out())
+	{
+		QMessageBox::critical(this, "Lost connection", "Connection to the server timed out.");
+		QApplication::quit();
+	}
 
 	repaint();
 }

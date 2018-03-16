@@ -6,6 +6,8 @@ Asteroids::Asteroids(const std::string &addr, std::int32_t sec)
 	, score(0)
 	, repair(0)
 	, paused(false)
+	, win(false)
+	, time_last_datagram(time(NULL))
 	, udp_secret(sec)
 	, udp(addr, SERVER_PORT)
 	, last_step(0)
@@ -105,6 +107,11 @@ const Player *Asteroids::me() const
 	return NULL;
 }
 
+bool Asteroids::timed_out() const
+{
+	return time(NULL) - time_last_datagram > SERVER_TIMEOUT;
+}
+
 void Asteroids::recv()
 {
 	lmp::netbuf buffer;
@@ -124,6 +131,7 @@ void Asteroids::recv()
 			bytes += buffer.size;
 		}
 #endif // NETWORK_METRICS
+		time_last_datagram = time(NULL);
 
 		// pop ServerInfo
 		const lmp::ServerInfo *const info = buffer.pop<lmp::ServerInfo>();
