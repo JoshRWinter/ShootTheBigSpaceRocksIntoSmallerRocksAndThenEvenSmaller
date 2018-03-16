@@ -31,6 +31,7 @@ private:
 	void integrate_client(Client&, const lmp::ClientInfo&);
 	const GameState &get_hist_state(unsigned) const;
 	void check_timeout();
+	bool check_pause() const;
 	bool check_win() const;
 	void step();
 	static void loop(Server*);
@@ -41,7 +42,6 @@ private:
 	std::list<GameState> history;
 	std::vector<Client> client_list;
 	int gameover_timer, win_timer;
-	bool paused;
 
 	mersenne random; // prng
 	std::atomic<bool> running; // flag to tell server to exit

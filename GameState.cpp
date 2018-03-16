@@ -3,12 +3,19 @@
 
 GameState GameState::blank;
 
+GameState::GameState()
+	: stepno(0)
+	, score(0)
+	, paused(false)
+{}
+
 GameState::GameState(const GameState &rhs)
 	: asteroid_list(rhs.asteroid_list)
 	, player_list(rhs.player_list)
 	, ship_list(rhs.ship_list)
 	, stepno(rhs.stepno)
 	, score(rhs.score)
+	, paused(rhs.paused)
 {}
 
 void GameState::reset()

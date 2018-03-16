@@ -196,11 +196,7 @@ struct Firework : Entity
 
 struct GameState
 {
-	GameState()
-		: stepno(0)
-		, score(0)
-	{}
-
+	GameState();
 	GameState(const GameState&);
 	void operator=(const GameState&) = delete;
 
@@ -213,6 +209,7 @@ struct GameState
 	std::vector<Ship> ship_list;
 	unsigned stepno;
 	int score;
+	bool paused;
 };
 
 template <typename T> void compile_diff(const std::vector<T> &old_list, const std::vector<T> &new_list, std::vector<const Entity*> &delta)

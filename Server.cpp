@@ -8,7 +8,6 @@ Server::Server()
 	: max_score(500)
 	, gameover_timer(TIMER_GAMEOVER)
 	, win_timer(TIMER_WIN)
-	, paused(false)
 	, running(true)
 	, tcp(SERVER_PORT)
 	, udp(SERVER_PORT)
@@ -188,14 +187,14 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	info.repair = repair_percentage;
 	if(repair_percentage != 0)
 		info_present = true;
-	info.paused = paused;
+	info.paused = state.paused;
+	if(info.paused != oldstate.paused)
+		info_present = true;
 	info.score = state.score;
 	info.win = check_win();
 	if(info.win)
 		info_present = true;
 	buffer.push(info);
-	if(paused && client.stepno != 0)
-		return;
 
 	std::vector<const Entity*> ent_list;
 
@@ -224,7 +223,6 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 		info_present = true;
 		buffer.push(lmp::Ship(*(Ship*)subject));
 	}
-
 
 	// figure out what entities have been deleted
 	std::vector<Entity::Reference> remove_list;
@@ -285,6 +283,17 @@ void Server::check_timeout()
 	}
 }
 
+bool Server::check_pause() const
+{
+	for(const Client &c : client_list)
+	{
+		if(c.paused)
+			return true;
+	}
+
+	return false;
+}
+
 bool Server::check_win() const
 {
 	for(const Player &p : state.player_list)
@@ -300,65 +309,54 @@ void Server::step()
 {
 	++state.stepno;
 
-	// see about pausing the game
-	bool request_pause = false;
-	for(const Client &client : client_list)
+	if(!(state.paused = check_pause()))
 	{
-		if(client.paused)
-			request_pause = true;
-	}
-	if(request_pause)
-	{
-		paused = true;
-		return;
-	}
-	paused = false;
-
-	// see if players are all dead
-	bool gameover = true;
-	for(const Player &p : state.player_list)
-	{
-		if(p.health > 0)
+		// see if players are all dead
+		bool gameover = true;
+		for(const Player &p : state.player_list)
 		{
-			gameover = false;
-			break;
+			if(p.health > 0)
+			{
+				gameover = false;
+				break;
+			}
 		}
-	}
-	if(gameover)
-	{
-		if(--gameover_timer == 0)
+		if(gameover)
 		{
-			state.reset();
-			gameover_timer = TIMER_GAMEOVER;
+			if(--gameover_timer == 0)
+			{
+				state.reset();
+				gameover_timer = TIMER_GAMEOVER;
+			}
 		}
-	}
 
-	const bool won = check_win();
-	if(won)
-	{
-		if(--win_timer == 0)
+		const bool won = check_win();
+		if(won)
 		{
-			state.reset();
-			win_timer = TIMER_WIN;
+			if(--win_timer == 0)
+			{
+				state.reset();
+				win_timer = TIMER_WIN;
+			}
 		}
+
+		// process players
+		for(Client &client : client_list)
+			client.player(state.player_list).step(true, client.controls, state, 1.0f, random);
+
+		// process boooletts
+		Bullet::step(true, state, NULL, random);
+
+		// process asteroids
+		Asteroid::step(true, state, NULL, random, 244);
+		if(won)
+			state.asteroid_list.clear();
+
+		// process ships
+		Ship::step(true, state, NULL, 1.0f, random);
+		if(won)
+			state.ship_list.clear();
 	}
-
-	// process players
-	for(Client &client : client_list)
-		client.player(state.player_list).step(true, client.controls, state, 1.0f, random);
-
-	// process boooletts
-	Bullet::step(true, state, NULL, random);
-
-	// process asteroids
-	Asteroid::step(true, state, NULL, random, 244);
-	if(won)
-		state.asteroid_list.clear();
-
-	// process ships
-	Ship::step(true, state, NULL, 1.0f, random);
-	if(won)
-		state.ship_list.clear();
 
 	// add this state to the history
 	history.push_back(state);
