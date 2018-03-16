@@ -18,8 +18,7 @@ static const char *const helptext =
 "- The big asteroids yield 3 points, the medium asteroids 2 points, and the smallest 1 point.\n\n"
 "\t[ Passenger Cruisers ]\n"
 "- Defend the periodic passenger cruisers as they pass through the asteroid field.\n"
-"- Assisting the cruiser in its escape without it being destroyed will yield 50 points, and a health boost of "
-"{cruiser remaining health %}.\n"
+"- Assisting the cruiser in its escape without it being destroyed will yield 50 points.\n"
 "- Failing to defend the cruiser will result in its destruction and a deduction of 50 points (even into the "
 "negatives!).\n\n"
 "\t[ Health & Friendly Fighters ]\n"
@@ -28,8 +27,10 @@ static const char *const helptext =
 "- If a friendly fighter becomes disabled, you can repair it by hovering your own vessel over the disabled "
 "fighter. You will not be able to fire your guns while repairing a friendly fighter.\n\n"
 "\t[ Game Over ]\n"
-"- If all friendly fighters become disabled, then the game is over and your final score will be displayed "
+"- If all friendly fighters become disabled (including your own fighter), then the game is over and your final score will be displayed "
 "center screen.\n"
+"- Alternatively, If you reach the max score of 500, AND no cruise ship entities are active, "
+"then the game is won, and you and your comrades can enjoy your victory as fireworks go off in the background.\n"
 "- If you die in this game, you die in real life."
 ;
 
