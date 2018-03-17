@@ -188,7 +188,7 @@ void Server::compile_datagram(const Client &client, lmp::netbuf &buffer)
 	if(repair_percentage != 0)
 		info_present = true;
 	info.paused = state.paused;
-	if(info.paused != oldstate.paused)
+	if(info.paused == 1 != oldstate.paused)
 		info_present = true;
 	info.score = state.score;
 	info.win = check_win();
