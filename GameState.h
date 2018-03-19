@@ -141,10 +141,10 @@ struct Particle : Entity
 	float ttl;
 };
 
-#define FIREWORK_SIZE 8
+#define FIREWORK_SIZE 16
 #define FIREWORK_TTL 60, 90
 #define FIREWORK_SPEED 1.0, 2.4
-#define FIREWORK_COUNT 13, 20
+#define FIREWORK_COUNT 19, 27
 struct Firework : Entity
 {
 	struct Color
@@ -192,6 +192,7 @@ struct Firework : Entity
 
 	Color color;
 	float ttl;
+	float initial_ttl;
 };
 
 struct GameState

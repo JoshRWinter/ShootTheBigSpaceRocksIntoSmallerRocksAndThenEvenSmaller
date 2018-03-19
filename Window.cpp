@@ -189,7 +189,7 @@ void Window::paintEvent(QPaintEvent*)
 			float x = fw.x, y = fw.y;
 			game.adjust_coords(this, x, y);
 			painter.setBrush(QColor(fw.color.r, fw.color.g, fw.color.b));
-			painter.drawEllipse(x, y, FIREWORK_SIZE, FIREWORK_SIZE);
+			painter.drawEllipse(x, y, fw.w, fw.h);
 		}
 		painter.setPen(assets.pen);
 

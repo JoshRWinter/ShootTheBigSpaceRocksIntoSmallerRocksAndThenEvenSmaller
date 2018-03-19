@@ -50,7 +50,7 @@ void Asteroids::step()
 	// process fireworks
 	Firework::step(firework_list, delta);
 	// generate fireworks
-	if(win && random(20))
+	if(win && random(18))
 	{
 		const float x = random(WORLD_LEFT, WORLD_RIGHT);
 		const float y = random(WORLD_TOP, WORLD_BOTTOM);

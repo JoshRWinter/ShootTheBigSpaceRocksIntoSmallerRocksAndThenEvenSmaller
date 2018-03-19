@@ -706,6 +706,7 @@ Firework::Firework(float X, float Y, const Color &c, mersenne &random)
 	: Entity(X, Y, FIREWORK_SIZE, FIREWORK_SIZE)
 	, color(c)
 	, ttl(random(FIREWORK_TTL))
+	, initial_ttl(ttl)
 {
 	rot = random(0.0, 3.1415926 * 2);
 	xv = cosf(rot) * random(FIREWORK_SPEED);
@@ -731,6 +732,10 @@ void Firework::step(std::vector<Firework> &firework_list, float delta)
 
 		fw.x += fw.xv * delta;
 		fw.y += fw.yv * delta;
+
+		// shrink it
+		fw.w = FIREWORK_SIZE * (fw.ttl / fw.initial_ttl);
+		fw.h = fw.w;
 
 		const float RETARD = 0.999;
 		fw.xv *= RETARD;
