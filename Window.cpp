@@ -46,6 +46,8 @@ Window::Window(Assets::PackType pack, const std::string &addr, int secret)
 	QObject::connect(manager, &QGamepadManager::gamepadAxisEvent, this, &Window::gamepad_axis);
 	QObject::connect(manager, &QGamepadManager::gamepadButtonPressEvent, this, &Window::gamepad_button_press);
 	QObject::connect(manager, &QGamepadManager::gamepadButtonReleaseEvent, this, &Window::gamepad_button_release);
+
+	sfx.start();
 }
 
 void Window::step()

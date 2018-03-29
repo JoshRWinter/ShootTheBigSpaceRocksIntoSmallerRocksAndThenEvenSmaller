@@ -61,7 +61,7 @@ int run(QApplication &app)
 
 Assets::PackType get_asset_pack()
 {
-	const char *const path = "./assets/active.txt";
+	const char *const path = "./assets/texture/active.txt";
 
 	std::ifstream in(path);
 	if(!in)

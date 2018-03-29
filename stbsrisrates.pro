@@ -21,6 +21,6 @@ CONFIG += debug console
 
 QMAKE_CXXFLAGS += -std=c++17
 
-QT += widgets gamepad
+QT += widgets gamepad multimedia
 
 TARGET = stbsrisrates

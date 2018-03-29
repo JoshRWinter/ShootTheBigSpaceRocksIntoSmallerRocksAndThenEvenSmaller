@@ -2,6 +2,9 @@
 #define WINDOW_H
 
 #include <QWidget>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
+#include <QDir>
 #include <QKeyEvent>
 #include <QPixmap>
 #include <QGamepadManager>
@@ -46,11 +49,11 @@ struct Assets
 		}
 
 		// construct players
-		QPixmap initial_player(("assets/" + path + "/player.png").c_str());
-		QPixmap initial_aster_big(("assets/" + path + "/asteroid_big.png").c_str());
-		QPixmap initial_aster_med(("assets/" + path + "/asteroid_med.png").c_str());
-		QPixmap initial_aster_small(("assets/" + path + "/asteroid_small.png").c_str());
-		QPixmap initial_ship(("assets/" + path + "/cruiser.png").c_str());
+		QPixmap initial_player(("assets/texture/" + path + "/player.png").c_str());
+		QPixmap initial_aster_big(("assets/texture/" + path + "/asteroid_big.png").c_str());
+		QPixmap initial_aster_med(("assets/texture/" + path + "/asteroid_med.png").c_str());
+		QPixmap initial_aster_small(("assets/texture/" + path + "/asteroid_small.png").c_str());
+		QPixmap initial_ship(("assets/texture/" + path + "/cruiser.png").c_str());
 
 		for(int i = 0; i < 360; ++i)
 		{
@@ -98,6 +101,59 @@ struct Assets
 	QPixmap player[360], asteroid_big[360], asteroid_med[360], asteroid_small[360], ship[360];
 };
 
+struct Sfx : QObject
+{
+	Sfx()
+	{
+		QObject::connect(&music_player, &QMediaPlayer::stateChanged, this, &Sfx::next);
+		QDir sfx_dir("assets/sfx/music");
+
+		const QFileInfoList &list = sfx_dir.entryInfoList();
+		for(const QFileInfo &filename : list)
+		{
+			if(filename.fileName() == "." || filename.fileName() == "..")
+				continue;
+
+			musics.push_back(filename.absoluteFilePath());
+		}
+
+		index = musics.size();
+	}
+
+	void start()
+	{
+		next();
+	}
+
+private:
+	void shuffle()
+	{
+		std::shuffle(musics.begin(), musics.end(), generator);
+	}
+
+	void next(QMediaPlayer::State state = QMediaPlayer::State::StoppedState)
+	{
+		if(state != QMediaPlayer::State::StoppedState)
+			return;
+
+		if(index > musics.size() - 1)
+		{
+			// shuffle and reset
+			shuffle();
+			index = 0;
+		}
+
+		music_player.setMedia(QUrl::fromLocalFile(musics[index]));
+		++index;
+		music_player.play();
+	}
+
+	unsigned index; // index into musics
+	std::mt19937 generator; // mersenne twister
+	std::vector<QString> musics;
+	QMediaPlayer music_player;
+};
+
 class Window : public QWidget
 {
 public:
@@ -135,6 +191,7 @@ private:
 	QFontMetrics fm_score;
 
 	Assets assets;
+	Sfx sfx;
 	Asteroids game;
 	Controls controls;
 };
