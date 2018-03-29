@@ -104,6 +104,7 @@ struct Assets
 struct Sfx : QObject
 {
 	Sfx()
+		: generator(time(NULL))
 	{
 		QObject::connect(&music_player, &QMediaPlayer::stateChanged, this, &Sfx::next);
 		QDir sfx_dir("assets/sfx/music");
