@@ -126,6 +126,15 @@ struct Sfx : QObject
 		next();
 	}
 
+	void playpause()
+	{
+		const QMediaPlayer::State state = music_player.state();
+		if(state == QMediaPlayer::State::PausedState)
+			music_player.play();
+		else if(state == QMediaPlayer::State::PlayingState)
+			music_player.pause();
+	}
+
 private:
 	void shuffle()
 	{

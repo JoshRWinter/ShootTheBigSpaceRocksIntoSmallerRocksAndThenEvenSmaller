@@ -326,7 +326,10 @@ void Window::process_keys(int key, bool press)
 			if(!press)
 				controls.pause = !controls.pause;
 			break;
-
+		case Qt::Key_F2:
+			if(press)
+				sfx.playpause();
+			break;
 		case Qt::Key_W:
 		case Qt::Key_Comma:
 		case Qt::Key_Up:
@@ -425,6 +428,10 @@ void Window::gamepad_button(QGamepadManager::GamepadButton button, bool press)
 		case QGamepadManager::GamepadButton::ButtonB:
 			if(controls.pause)
 				controls.pause = false;
+			break;
+		case QGamepadManager::GamepadButton::ButtonX:
+			if(press)
+				sfx.playpause();
 			break;
 		default: break;
 	}
