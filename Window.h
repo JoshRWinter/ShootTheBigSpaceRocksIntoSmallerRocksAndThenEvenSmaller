@@ -145,6 +145,8 @@ private:
 	{
 		if(state != QMediaPlayer::State::StoppedState)
 			return;
+		if(musics.size() == 0)
+			return;
 
 		if(index > musics.size() - 1)
 		{
