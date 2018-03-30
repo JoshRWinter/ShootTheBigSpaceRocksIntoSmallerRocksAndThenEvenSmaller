@@ -330,6 +330,15 @@ void Window::process_keys(int key, bool press)
 			if(press)
 				sfx.playpause();
 			break;
+		case Qt::Key_Backspace:
+			if(press)
+				sfx.back();
+			break;
+		case Qt::Key_Enter:
+		case Qt::Key_Return:
+			if(press)
+				sfx.forward();
+			break;
 		case Qt::Key_W:
 		case Qt::Key_Comma:
 		case Qt::Key_Up:
@@ -432,6 +441,14 @@ void Window::gamepad_button(QGamepadManager::GamepadButton button, bool press)
 		case QGamepadManager::GamepadButton::ButtonX:
 			if(press)
 				sfx.playpause();
+			break;
+		case QGamepadManager::GamepadButton::ButtonR1:
+			if(press)
+				sfx.forward();
+			break;
+		case QGamepadManager::GamepadButton::ButtonL1:
+			if(press)
+				sfx.back();
 			break;
 		default: break;
 	}

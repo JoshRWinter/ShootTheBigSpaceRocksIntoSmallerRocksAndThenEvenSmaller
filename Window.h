@@ -106,7 +106,7 @@ struct Sfx : QObject
 	Sfx()
 		: generator(time(NULL))
 	{
-		QObject::connect(&music_player, &QMediaPlayer::stateChanged, this, &Sfx::next);
+		QObject::connect(&music_player, &QMediaPlayer::mediaStatusChanged, this, &Sfx::next);
 		QDir sfx_dir("assets/sfx/music");
 
 		const QFileInfoList &list = sfx_dir.entryInfoList();
@@ -126,6 +126,28 @@ struct Sfx : QObject
 		next();
 	}
 
+	void forward()
+	{
+		music_player.stop();
+		next();
+	}
+
+	void back()
+	{
+		const long long pos = music_player.position();
+
+		if(pos > 1500)
+			music_player.setPosition(0);
+		else if(index > 1)
+		{
+			index -= 2;
+			if(index < 0)
+				index = 0;
+			music_player.stop();
+			next();
+		}
+	}
+
 	void playpause()
 	{
 		const QMediaPlayer::State state = music_player.state();
@@ -141,14 +163,14 @@ private:
 		std::shuffle(musics.begin(), musics.end(), generator);
 	}
 
-	void next(QMediaPlayer::State state = QMediaPlayer::State::StoppedState)
+	void next(QMediaPlayer::MediaStatus status = QMediaPlayer::MediaStatus::EndOfMedia)
 	{
-		if(state != QMediaPlayer::State::StoppedState)
+		if(status != QMediaPlayer::MediaStatus::EndOfMedia)
 			return;
 		if(musics.size() == 0)
 			return;
 
-		if(index > musics.size() - 1)
+		if((unsigned)index > musics.size() - 1)
 		{
 			// shuffle and reset
 			shuffle();
@@ -160,7 +182,7 @@ private:
 		music_player.play();
 	}
 
-	unsigned index; // index into musics
+	int index; // index into musics
 	std::mt19937 generator; // mersenne twister
 	std::vector<QString> musics;
 	QMediaPlayer music_player;
